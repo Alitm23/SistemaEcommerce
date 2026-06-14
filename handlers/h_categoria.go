@@ -46,9 +46,7 @@ func CrearCategoria(w http.ResponseWriter, r *http.Request) {
 
 	// Valida que el nombre no esté vacío
 	categoria, err := models.NuevaCategoria(
-		r.FormValue("nombre"),
-		r.FormValue("descripcion"),
-	)
+		r.FormValue("nombre"))
 	if err != nil {
 		http.Error(w, "Datos inválidos: "+err.Error(), http.StatusBadRequest)
 		return
@@ -83,7 +81,7 @@ func MostrarEditarCategoria(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// El template detecta si categoria.ID > 0 para mostrar editar o crear
+	// El template detecta si catergori.ID > 0 para mostrar editar o crear
 	tmpl.Execute(w, categoria)
 }
 
@@ -108,6 +106,7 @@ func ActualizarCategoria(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Sobreescribir los campos con los nuevos valores del formulario
+
 	categoria.Nombre = r.FormValue("nombre")
 	if err := categoria.Actualizar(); err != nil {
 		http.Error(w, "Error al actualizar: "+err.Error(), http.StatusInternalServerError)

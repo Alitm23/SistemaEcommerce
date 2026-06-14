@@ -186,7 +186,7 @@ func ProcesarEdicion(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
 }
 
-// EliminarUsuario elimina un usuario de la base de datos por su ID.
+// Función para eliminar un usuario de la base de datos por su ID
 func EliminarUsuario(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {

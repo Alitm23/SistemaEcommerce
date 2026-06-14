@@ -13,37 +13,35 @@ type ControlCategoria interface {
 }
 
 type Categoria struct {
-	ID          int
-	Nombre      string
-	Descripcion string
+	ID     int
+	Nombre string
 }
 
-func NuevaCategoria(nombre, descripcion string) (*Categoria, error) {
+func NuevaCategoria(nombre string) (*Categoria, error) {
 	if nombre == "" {
 		return nil, errors.New("el nombre no puede estar vacío")
 	}
 	return &Categoria{
-		Nombre:      nombre,
-		Descripcion: descripcion,
+		Nombre: nombre,
 	}, nil
 }
 
 func (c *Categoria) Registrar() error {
 	query := `
-		INSERT INTO categoria (nombre, descripcion)
-		VALUES ($1, $2)
+		INSERT INTO categoria (nombre)
+		VALUES ($1)
 		RETURNING id
 	`
-	return db.DB.QueryRow(query, c.Nombre, c.Descripcion).Scan(&c.ID)
+	return db.DB.QueryRow(query, c.Nombre).Scan(&c.ID)
 }
 
 func (c *Categoria) Actualizar() error {
 	query := `
 		UPDATE categoria
-		SET nombre = $1, descripcion = $2
-		WHERE id = $3
+		SET nombre = $1
+		WHERE id = $2
 	`
-	resultado, err := db.DB.Exec(query, c.Nombre, c.Descripcion, c.ID)
+	resultado, err := db.DB.Exec(query, c.Nombre, c.ID)
 	if err != nil {
 		return err
 	}
@@ -75,9 +73,9 @@ func (c *Categoria) Eliminar() error {
 }
 
 func BuscarCategoriaPorID(id int) (*Categoria, bool) {
-	query := `SELECT id, nombre, descripcion FROM categoria WHERE id = $1`
+	query := `SELECT id, nombre FROM categoria WHERE id = $1`
 	c := &Categoria{}
-	err := db.DB.QueryRow(query, id).Scan(&c.ID, &c.Nombre, &c.Descripcion)
+	err := db.DB.QueryRow(query, id).Scan(&c.ID, &c.Nombre)
 	if err != nil {
 		return nil, false
 	}
@@ -85,7 +83,7 @@ func BuscarCategoriaPorID(id int) (*Categoria, bool) {
 }
 
 func ListarCategorias() ([]Categoria, error) {
-	filas, err := db.DB.Query(`SELECT id, nombre, descripcion FROM categoria ORDER BY id ASC`)
+	filas, err := db.DB.Query(`SELECT id, nombre FROM categoria ORDER BY id ASC`)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +93,7 @@ func ListarCategorias() ([]Categoria, error) {
 
 	for filas.Next() {
 		var c Categoria
-		if err := filas.Scan(&c.ID, &c.Nombre, &c.Descripcion); err != nil {
+		if err := filas.Scan(&c.ID, &c.Nombre); err != nil {
 			return nil, err
 		}
 		categorias = append(categorias, c)

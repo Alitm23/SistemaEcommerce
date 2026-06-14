@@ -19,13 +19,14 @@ type Producto struct {
 	ID           int
 	CategoriaID  int
 	Nombre       string
+	Descripcion  string
 	Precio       float64
 	Stock        int
 	FechaIngreso time.Time
 }
 
 // Valida los datos recibidos y crea una instancia de Producto
-func NuevoProducto(categoriaID int, nombre string, precio float64, stock int) (*Producto, error) {
+func NuevoProducto(categoriaID int, nombre, descripcion string, precio float64, stock int) (*Producto, error) {
 	if nombre == "" {
 		return nil, errors.New("el nombre no puede estar vacío")
 	}
@@ -41,6 +42,7 @@ func NuevoProducto(categoriaID int, nombre string, precio float64, stock int) (*
 	return &Producto{
 		CategoriaID: categoriaID,
 		Nombre:      nombre,
+		Descripcion: descripcion,
 		Precio:      precio,
 		Stock:       stock,
 	}, nil
@@ -59,8 +61,8 @@ func (p *Producto) ActualizarStock(cantidad int) error {
 // Función Registrar almacena un nuevo producto en la base de datos.
 func (p *Producto) Registrar() error {
 	query := `
-		INSERT INTO producto (categoria_id, nombre, precio, stock)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO producto (categoria_id, nombre, descripcion, precio, stock)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, fecha_ingreso
 	`
 
@@ -68,6 +70,7 @@ func (p *Producto) Registrar() error {
 		query,
 		p.CategoriaID,
 		p.Nombre,
+		p.Descripcion,
 		p.Precio,
 		p.Stock,
 	).Scan(&p.ID, &p.FechaIngreso)
@@ -79,15 +82,17 @@ func (p *Producto) Actualizar() error {
 		UPDATE producto
 		SET categoria_id = $1,
 		    nombre       = $2,
-		    precio       = $3,
-		    stock        = $4
-		WHERE id = $5
+			descripcion  = $3,
+		    precio       = $4,
+		    stock        = $5
+		WHERE id = $6
 	`
 
 	resultado, err := db.DB.Exec(
 		query,
 		p.CategoriaID,
 		p.Nombre,
+		p.Descripcion,
 		p.Precio,
 		p.Stock,
 		p.ID,
@@ -136,7 +141,7 @@ func (p *Producto) Eliminar() error {
 
 func BuscarProductoPorID(id int) (*Producto, bool) {
 	query := `
-		SELECT id, categoria_id, nombre, precio, stock, fecha_ingreso
+		SELECT id, categoria_id, nombre, descripcion, precio, stock, fecha_ingreso
 		FROM producto
 		WHERE id = $1
 	`
@@ -147,6 +152,7 @@ func BuscarProductoPorID(id int) (*Producto, bool) {
 		&p.ID,
 		&p.CategoriaID,
 		&p.Nombre,
+		&p.Descripcion,
 		&p.Precio,
 		&p.Stock,
 		&p.FechaIngreso,
@@ -162,7 +168,7 @@ func BuscarProductoPorID(id int) (*Producto, bool) {
 // Listar todos loa productos registrados
 func ListarProductos() ([]Producto, error) {
 	query := `
-		SELECT id, categoria_id, nombre, precio, stock, fecha_ingreso
+		SELECT id, categoria_id, nombre, descripcion, precio, stock, fecha_ingreso
 		FROM producto
 		ORDER BY id ASC
 	`
@@ -183,6 +189,7 @@ func ListarProductos() ([]Producto, error) {
 			&p.ID,
 			&p.CategoriaID,
 			&p.Nombre,
+			&p.Descripcion,
 			&p.Precio,
 			&p.Stock,
 			&p.FechaIngreso,
