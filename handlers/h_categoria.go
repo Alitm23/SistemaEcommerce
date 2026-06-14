@@ -109,8 +109,6 @@ func ActualizarCategoria(w http.ResponseWriter, r *http.Request) {
 
 	// Sobreescribir los campos con los nuevos valores del formulario
 	categoria.Nombre = r.FormValue("nombre")
-	categoria.Descripcion = r.FormValue("descripcion")
-
 	if err := categoria.Actualizar(); err != nil {
 		http.Error(w, "Error al actualizar: "+err.Error(), http.StatusInternalServerError)
 		return
