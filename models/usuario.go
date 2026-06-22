@@ -19,6 +19,7 @@ type ControlUsuario interface {
 type Usuario struct {
 	ID            int
 	Nombre        string
+	Apellido      string
 	Email         string
 	password      string
 	Rol           string
@@ -28,7 +29,7 @@ type Usuario struct {
 }
 
 // Función para validar los datos recibidos y crea una instancia de Usuario con la contraseña almacenada como hash
-func RegistrarUsuario(nombre, email, passwordhash, rol, direccion, telefono string) (*Usuario, error) {
+func RegistrarUsuario(nombre, apellido, email, passwordhash, rol, direccion, telefono string) (*Usuario, error) {
 	if nombre == "" {
 		return nil, errors.New("el nombre no puede estar vacío")
 	}
@@ -49,6 +50,7 @@ func RegistrarUsuario(nombre, email, passwordhash, rol, direccion, telefono stri
 
 	return &Usuario{
 		Nombre:    nombre,
+		Apellido:  apellido,
 		Email:     email,
 		password:  hash,
 		Rol:       rol,
@@ -67,6 +69,7 @@ func (u *Usuario) AsignarPw(hash string) {
 	u.password = hash
 }
 
+// Métodos de acceso a la contraseña
 func (u *Usuario) CambiarPw(nueva string) error {
 	if nueva == "" {
 		return errors.New("la contraseña no puede estar vacía")
@@ -81,6 +84,7 @@ func (u *Usuario) CambiarPw(nueva string) error {
 	return nil
 }
 
+// CambiarRol valida y cambia el rol del usuario.
 func (u *Usuario) CambiarRol(rol string) error {
 	if rol != "cliente" && rol != "admin" {
 		return errors.New("rol inválido: debe ser 'cliente' o 'admin'")
@@ -97,45 +101,27 @@ func (u *Usuario) Autenticar(passwordhash string) error {
 // Registrar almacena un nuevo usuario en la base de datos
 func (u *Usuario) Registrar() error {
 	query := `
-		INSERT INTO usuario (nombre, email, contrasenia, rol, direccion, telefono)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO usuario (nombre, apellido, email, password, rol, direccion, telefono)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id, fecha_registro
 	`
 
 	return db.DB.QueryRow(
 		query,
-		u.Nombre,
-		u.Email,
-		u.password,
-		u.Rol,
-		u.Direccion,
-		u.Telefono,
-	).Scan(&u.ID, &u.FechaRegistro)
+		u.Nombre, u.Apellido, u.Email, u.password, u.Rol, u.Direccion, u.Telefono).Scan(&u.ID, &u.FechaRegistro)
 }
 
 // Actualizar modifica la información de un usuario existente
 func (u *Usuario) Actualizar() error {
 	query := `
 		UPDATE usuario
-		SET nombre      = $1,
-		    email       = $2,
-		    contrasenia = $3,
-		    rol         = $4,
-		    direccion   = $5,
-		    telefono    = $6
-		WHERE id = $7
+		SET nombre = $1, apellido = $2, email = $3, password = $4, rol = $5, direccion = $6, telefono = $7
+		WHERE id = $8
 	`
 
 	resultado, err := db.DB.Exec(
 		query,
-		u.Nombre,
-		u.Email,
-		u.password,
-		u.Rol,
-		u.Direccion,
-		u.Telefono,
-		u.ID,
-	)
+		u.Nombre, u.Apellido, u.Email, u.password, u.Rol, u.Direccion, u.Telefono, u.ID)
 
 	if err != nil {
 		return err
@@ -156,10 +142,7 @@ func (u *Usuario) Actualizar() error {
 // Eliminar un usuario de la base de datos
 func (u *Usuario) Eliminar() error {
 	resultado, err := db.DB.Exec(
-		`DELETE FROM usuario WHERE id = $1`,
-		u.ID,
-	)
-
+		`DELETE FROM usuario WHERE id = $1`, u.ID)
 	if err != nil {
 		return err
 	}
@@ -177,10 +160,9 @@ func (u *Usuario) Eliminar() error {
 }
 
 // Funciones de consulta y búsqueda de usuarios
-
 func BuscarPorID(id int) (*Usuario, bool) {
 	query := `
-		SELECT id, nombre, email, contrasenia, rol, direccion, telefono, fecha_registro
+		SELECT id, nombre, apellido, email, password, rol, direccion, telefono, fecha_registro
 		FROM usuario
 		WHERE id = $1
 	`
@@ -188,16 +170,7 @@ func BuscarPorID(id int) (*Usuario, bool) {
 	u := &Usuario{}
 	var hash string
 
-	err := db.DB.QueryRow(query, id).Scan(
-		&u.ID,
-		&u.Nombre,
-		&u.Email,
-		&hash,
-		&u.Rol,
-		&u.Direccion,
-		&u.Telefono,
-		&u.FechaRegistro,
-	)
+	err := db.DB.QueryRow(query, id).Scan(&u.ID, &u.Nombre, &u.Apellido, &u.Email, &hash, &u.Rol, &u.Direccion, &u.Telefono, &u.FechaRegistro)
 
 	if err != nil {
 		return nil, false
@@ -210,25 +183,15 @@ func BuscarPorID(id int) (*Usuario, bool) {
 // consulta para obtener un usuario utilizando su dirección de correo electrónico.
 func BuscarPorEmail(email string) (*Usuario, bool) {
 	query := `
-		SELECT id, nombre, email, contrasenia, rol, direccion, telefono, fecha_registro
+		SELECT id, nombre, apellido, email, password, rol, direccion, telefono, fecha_registro
 		FROM usuario
 		WHERE email = $1
 	`
 	//instancia vacía donde se almacenarán los datos obtenidos de la base de datos
 	u := &Usuario{}
-	var hash string //// Variable temporal para almacenar la contraseña encriptada
-
+	var hash string
 	//asignar cada columna recuperada de la consulta a los atributos correspondientes de la estructura Usuario
-	err := db.DB.QueryRow(query, email).Scan(
-		&u.ID,
-		&u.Nombre,
-		&u.Email,
-		&hash,
-		&u.Rol,
-		&u.Direccion,
-		&u.Telefono,
-		&u.FechaRegistro,
-	)
+	err := db.DB.QueryRow(query, email).Scan(&u.ID, &u.Nombre, &u.Apellido, &u.Email, &u.Rol, &u.Direccion, &u.Telefono, &u.FechaRegistro)
 
 	if err != nil {
 		return nil, false
@@ -242,7 +205,7 @@ func BuscarPorEmail(email string) (*Usuario, bool) {
 func ListarUsuarios() ([]Usuario, error) {
 	//consulta todos los usuarios de la base de datos para ordenarlos por su id
 	query := `
-		SELECT id, nombre, email, rol, direccion, telefono, fecha_registro
+		SELECT id, nombre, apellido, email, rol, direccion, telefono, fecha_registro
 		FROM usuario
 		ORDER BY id ASC
 	`
@@ -260,15 +223,7 @@ func ListarUsuarios() ([]Usuario, error) {
 		// Variable temporal donde se almacenará la información de cada usuario recuperado
 		var u Usuario
 		// Asigna los valores de cada columna a los atributos correspondientes de la estructura Usuario
-		err := filas.Scan(
-			&u.ID,
-			&u.Nombre,
-			&u.Email,
-			&u.Rol,
-			&u.Direccion,
-			&u.Telefono,
-			&u.FechaRegistro,
-		)
+		err := filas.Scan(&u.ID, &u.Nombre, &u.Apellido, &u.Email, &u.Rol, &u.Direccion, &u.Telefono, &u.FechaRegistro)
 
 		if err != nil {
 			return nil, err
