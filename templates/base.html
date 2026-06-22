@@ -1,0 +1,26 @@
+{{define "base"}}
+    <!DOCTYPE html>
+    <html lang="en"
+    <head>
+        <meta cha
+        <title>ECOMMERCE</title>
+    </head>
+    <body>
+        <!--estructura comun del sitio-->
+        <h1>ECOMMERCE</h1>
+        <!-- header-->
+
+        <!-- contenido dinamico-->
+        {{ block "content" .}}
+
+        <!--se puede colocar informacion comun o dinamico y mostrar diferentes vistas pagina index
+        insertar el bloque autentificacion-->
+        
+        
+        {{end}}
+
+        <footer>
+            <p>
+        </footer>
+    </body>
+{{end}}
