@@ -22,7 +22,7 @@ Desarrollar una plataforma digital de e-commerce que permita a los clientes expl
 
 ## Módulos del Sistema
 
-1. **Catálogo e Inventario:** Encargado del registro, actualización, eliminación y consulta de productos. También maneja la reducción de stock al confirmar un pago.
+1. **Catálogo:** Encargado del registro, actualización, eliminación y consulta de productos. También maneja la reducción de stock al confirmar un pago.
 2. **Carrito:** Gestiona la agregación y eliminación de ítems, el cálculo del total de la compra y el proceso de checkout.
 3. **Ordenes y Pagos:** Módulo responsable de generar la orden de compra, procesar el pago simulado y gestionar los cambios de estado de la orden.
 4. **Usuarios:** Controla el registro, el inicio de sesión y la gestión básica de los roles de acceso.
@@ -32,8 +32,6 @@ El proyecto está desarrollado en **Go (Golang)** y hace uso de las siguientes d
 **Paquetes Externos:**
 * **Driver PostgreSQL (`gorm.io/driver/postgres`):** Controlador para la conexión con la base de datos relacional PostgreSQL.
 * **Bcrypt (`golang.org/x/crypto/bcrypt`):** Algoritmo de hash para encriptar contraseñas y evitar que se guarden en texto plano.
-* **Gin (`github.com/gin-gonic/gin`):** Framework web de alto rendimiento para el enrutamiento eficiente de la API.
-* **GORM (`gorm.io/gorm`):** ORM utilizado para mapear structs a tablas, construir consultas y generar migraciones automáticas.
 * **JWT (`github.com/golang-jwt/jwt/v5`):** Utilizado para la generación y validación de tokens garantizando una autenticación segura.
 * **Godotenv (`github.com/joho/godotenv`):** Para la carga y configuración de variables de entorno desde un archivo `.env`.
 
