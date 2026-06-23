@@ -15,16 +15,17 @@ func NuevoItemOrdenRepository() *ItemOrdenRepository {
 	return &ItemOrdenRepository{}
 }
 
-// Insertar persiste un nuevo ítem dentro de una orden
+// Insertar persiste un nuevo ítem dentro de una orden.
+// Referencia producto_talla_id para preservar la talla exacta comprada.
 func (r *ItemOrdenRepository) Insertar(i *models.ItemOrden) error {
 	query := `
-		INSERT INTO item_orden (orden_id, producto_id, cantidad, precio_compra)
+		INSERT INTO item_orden (orden_id, producto_talla_id, cantidad, precio_compra)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`
 	return db.DB.QueryRow(
 		query,
-		i.OrdenID, i.ProductoID, i.Cantidad, i.PrecioCompra,
+		i.OrdenID, i.ProductoTallaID, i.Cantidad, i.PrecioCompra,
 	).Scan(&i.ID)
 }
 
@@ -50,7 +51,7 @@ func (r *ItemOrdenRepository) Eliminar(id int) error {
 // ListarPorOrden recupera todos los ítems asociados a una orden específica
 func (r *ItemOrdenRepository) ListarPorOrden(ordenID int) ([]models.ItemOrden, error) {
 	query := `
-		SELECT id, orden_id, producto_id, cantidad, precio_compra
+		SELECT id, orden_id, producto_talla_id, cantidad, precio_compra
 		FROM item_orden
 		WHERE orden_id = $1
 	`
@@ -64,11 +65,10 @@ func (r *ItemOrdenRepository) ListarPorOrden(ordenID int) ([]models.ItemOrden, e
 
 	for filas.Next() {
 		var item models.ItemOrden
-		err := filas.Scan(
-			&item.ID, &item.OrdenID, &item.ProductoID,
+		if err := filas.Scan(
+			&item.ID, &item.OrdenID, &item.ProductoTallaID,
 			&item.Cantidad, &item.PrecioCompra,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, item)

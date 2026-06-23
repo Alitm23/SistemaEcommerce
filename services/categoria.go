@@ -15,8 +15,6 @@ type CategoriaService struct {
 }
 
 // NuevoCategoriaService construye el service inyectando su repositorio correspondiente.
-// La inyección de dependencias permite que el service opere sin conocer
-// los detalles de implementación del acceso a datos.
 func NuevoCategoriaService() *CategoriaService {
 	return &CategoriaService{
 		repo: repository.NuevoCategoriaRepository(),
@@ -24,15 +22,14 @@ func NuevoCategoriaService() *CategoriaService {
 }
 
 // CrearCategoria valida que el nombre no esté vacío y delega la persistencia al repositorio.
-// La validación en el service garantiza que el repositorio reciba únicamente datos coherentes.
-func (s *CategoriaService) CrearCategoria(nombre string) (*models.Categoria, error) {
+// La descripción es opcional y puede quedar vacía.
+func (s *CategoriaService) CrearCategoria(nombre, descripcion string) (*models.Categoria, error) {
 	if nombre == "" {
 		return nil, errors.New("el nombre de la categoría no puede estar vacío")
 	}
 
-	c := &models.Categoria{Nombre: nombre}
+	c := &models.Categoria{Nombre: nombre, Descripcion: descripcion}
 
-	// Delegar la operación de inserción al repositorio
 	if err := s.repo.Insertar(c); err != nil {
 		return nil, err
 	}
@@ -41,19 +38,18 @@ func (s *CategoriaService) CrearCategoria(nombre string) (*models.Categoria, err
 }
 
 // ActualizarCategoria verifica la existencia del registro y aplica los nuevos valores.
-// Se busca primero la entidad para garantizar que la actualización opera sobre datos reales.
-func (s *CategoriaService) ActualizarCategoria(id int, nombre string) (*models.Categoria, error) {
+func (s *CategoriaService) ActualizarCategoria(id int, nombre, descripcion string) (*models.Categoria, error) {
 	if nombre == "" {
 		return nil, errors.New("el nombre de la categoría no puede estar vacío")
 	}
 
-	// Verificar que la categoría existe antes de intentar modificarla
 	c, ok := s.repo.BuscarPorID(id)
 	if !ok {
 		return nil, errors.New("categoría no encontrada")
 	}
 
 	c.Nombre = nombre
+	c.Descripcion = descripcion
 
 	if err := s.repo.Actualizar(c); err != nil {
 		return nil, err
@@ -63,13 +59,12 @@ func (s *CategoriaService) ActualizarCategoria(id int, nombre string) (*models.C
 }
 
 // EliminarCategoria elimina una categoría por su identificador.
-// Si la categoría tiene productos asociados, PostgreSQL retornará
-// un error de integridad referencial que se propagará al handler.
+// Si tiene productos asociados, PostgreSQL retornará un error de integridad referencial.
 func (s *CategoriaService) EliminarCategoria(id int) error {
 	return s.repo.Eliminar(id)
 }
 
-// BuscarPorID delega la búsqueda al repositorio y retorna el resultado idiomático (entidad, bool).
+// BuscarPorID delega la búsqueda al repositorio y retorna el resultado idiomático.
 func (s *CategoriaService) BuscarPorID(id int) (*models.Categoria, bool) {
 	return s.repo.BuscarPorID(id)
 }

@@ -7,9 +7,9 @@ type ControlItemCarrito interface {
 }
 
 type ItemCarrito struct {
-	ID             int
-	CarritoID      int
-	ProductoID     int
-	Cantidad       int
-	PrecioUnitario float64
+	ID              int
+	CarritoID       int
+	ProductoTallaID int
+	Cantidad        int
+	PrecioUnitario  float64
 }

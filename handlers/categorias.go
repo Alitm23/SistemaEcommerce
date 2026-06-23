@@ -1,135 +1,122 @@
 package handlers
 
 import (
-	"html/template"
+	"encoding/json"
 	"net/http"
 	"strconv"
 
-	"github.com/Alitm23/SistemaEcommerce/models"
-
+	"github.com/Alitm23/SistemaEcommerce/services"
 	"github.com/gorilla/mux"
 )
 
-// Obtiene todas las categorías y las renderiza en el template
-func ListarCategorias(w http.ResponseWriter, r *http.Request) {
-	categorias, err := models.ListarCategorias()
-	if err != nil {
-		http.Error(w, "Error al obtener las categorías: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	tmpl, err := template.ParseFiles("templates/categoria/lista.html")
-	if err != nil {
-		http.Error(w, "Error al cargar el template", http.StatusInternalServerError)
-		return
-	}
-
-	tmpl.Execute(w, categorias)
+// CategoriaHandler expone los endpoints HTTP relacionados con la gestión de categorías
+type CategoriaHandler struct {
+	servicio *services.CategoriaService
 }
 
-// Renderiza el formulario vacío para crear una nueva categoría
-func MostrarFormCategoria(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/categoria/form.html")
-	if err != nil {
-		http.Error(w, "Error al cargar el template", http.StatusInternalServerError)
-		return
+// NuevoCategoriaHandler construye el handler inyectando el servicio correspondiente
+func NuevoCategoriaHandler() *CategoriaHandler {
+	return &CategoriaHandler{
+		servicio: services.NuevoCategoriaService(),
 	}
-	tmpl.Execute(w, nil)
 }
 
-// Procesa el formulario y registra una nueva categoría en la BD
-func CrearCategoria(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error al procesar el formulario", http.StatusBadRequest)
+// Crear registra una nueva categoría en el sistema
+func (h *CategoriaHandler) Crear(w http.ResponseWriter, r *http.Request) {
+	var datos struct {
+		Nombre      string `json:"nombre"`
+		Descripcion string `json:"descripcion"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		http.Error(w, "cuerpo de la petición inválido", http.StatusBadRequest)
 		return
 	}
 
-	// Valida que el nombre no esté vacío
-	categoria, err := models.NuevaCategoria(
-		r.FormValue("nombre"))
+	categoria, err := h.servicio.CrearCategoria(datos.Nombre, datos.Descripcion)
 	if err != nil {
-		http.Error(w, "Datos inválidos: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := categoria.Registrar(); err != nil {
-		http.Error(w, "Error al crear la categoría: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/categorias", http.StatusSeeOther)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(categoria)
 }
 
-// Cargar los datos actuales y muestra el formulario de edición.
-func MostrarEditarCategoria(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+// ObtenerPorID recupera una categoría según su identificador único
+func (h *CategoriaHandler) ObtenerPorID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "ID inválido", http.StatusBadRequest)
+		http.Error(w, "identificador inválido", http.StatusBadRequest)
 		return
 	}
 
-	// retorna (categoria, bool)
-	categoria, ok := models.BuscarCategoriaPorID(id)
+	categoria, ok := h.servicio.BuscarPorID(id)
 	if !ok {
-		http.Error(w, "Categoría no encontrada", http.StatusNotFound)
+		http.Error(w, "categoría no encontrada", http.StatusNotFound)
 		return
 	}
 
-	tmpl, err := template.ParseFiles("templates/categoria/form.html")
-	if err != nil {
-		http.Error(w, "Error al cargar el template", http.StatusInternalServerError)
-		return
-	}
-
-	// El template detecta si catergori.ID > 0 para mostrar editar o crear
-	tmpl.Execute(w, categoria)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categoria)
 }
 
-// Función para guardar los cambios del formulario de edición en la BD
-func ActualizarCategoria(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+// Listar recupera todas las categorías registradas en el sistema
+func (h *CategoriaHandler) Listar(w http.ResponseWriter, r *http.Request) {
+	categorias, err := h.servicio.ListarCategorias()
 	if err != nil {
-		http.Error(w, "ID inválido", http.StatusBadRequest)
+		http.Error(w, "error al obtener categorías", http.StatusInternalServerError)
 		return
 	}
 
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error al procesar el formulario", http.StatusBadRequest)
-		return
-	}
-
-	// Verificar que la categoría existe antes de modificarla
-	categoria, ok := models.BuscarCategoriaPorID(id)
-	if !ok {
-		http.Error(w, "Categoría no encontrada", http.StatusNotFound)
-		return
-	}
-
-	// Sobreescribir los campos con los nuevos valores del formulario
-
-	categoria.Nombre = r.FormValue("nombre")
-	if err := categoria.Actualizar(); err != nil {
-		http.Error(w, "Error al actualizar: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/categorias", http.StatusSeeOther)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categorias)
 }
 
-// elimina una categoría por su ID
-func EliminarCategoria(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+// Actualizar modifica el nombre y descripción de una categoría existente
+func (h *CategoriaHandler) Actualizar(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "ID inválido", http.StatusBadRequest)
+		http.Error(w, "identificador inválido", http.StatusBadRequest)
 		return
 	}
 
-	// Solo necesitamos el ID para la operación de eliminación
-	categoria := &models.Categoria{ID: id}
-	if err := categoria.Eliminar(); err != nil {
-		http.Error(w, "Error al eliminar: "+err.Error(), http.StatusInternalServerError)
+	var datos struct {
+		Nombre      string `json:"nombre"`
+		Descripcion string `json:"descripcion"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		http.Error(w, "cuerpo de la petición inválido", http.StatusBadRequest)
 		return
 	}
 
-	http.Redirect(w, r, "/categorias", http.StatusSeeOther)
+	categoria, err := h.servicio.ActualizarCategoria(id, datos.Nombre, datos.Descripcion)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categoria)
+}
+
+// Eliminar borra una categoría del sistema por su identificador
+func (h *CategoriaHandler) Eliminar(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "identificador inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.servicio.EliminarCategoria(id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

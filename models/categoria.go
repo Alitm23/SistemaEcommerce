@@ -7,6 +7,7 @@ type ControlCategoria interface {
 }
 
 type Categoria struct {
-	ID     int
-	Nombre string
+	ID          int
+	Nombre      string
+	Descripcion string
 }

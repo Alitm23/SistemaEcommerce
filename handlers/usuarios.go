@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"html/template"
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -9,179 +9,202 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// UsuarioHandler agrupa los handlers HTTP del módulo usuario
+// UsuarioHandler expone los endpoints HTTP relacionados con la gestión de usuarios
 type UsuarioHandler struct {
-	service *services.UsuarioService
+	servicio *services.UsuarioService
 }
 
-// NuevoUsuarioHandler construye el handler inyectando el service
+// NuevoUsuarioHandler construye el handler inyectando el servicio correspondiente
 func NuevoUsuarioHandler() *UsuarioHandler {
 	return &UsuarioHandler{
-		service: services.NuevoUsuarioService(),
+		servicio: services.NuevoUsuarioService(),
 	}
 }
 
-// MostrarRegistro renderiza el formulario de registro
-func (h *UsuarioHandler) MostrarRegistro(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/usuario/registro.html")
-	if err != nil {
-		http.Error(w, "Error al cargar el template", http.StatusInternalServerError)
-		return
-	}
-	tmpl.Execute(w, nil)
-}
-
-// ProcesarRegistro recibe el formulario y registra un nuevo usuario
-func (h *UsuarioHandler) ProcesarRegistro(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error al procesar el formulario", http.StatusBadRequest)
-		return
+// Registrar crea un nuevo usuario con los datos enviados en el cuerpo de la petición
+func (h *UsuarioHandler) Registrar(w http.ResponseWriter, r *http.Request) {
+	var datos struct {
+		Nombre    string `json:"nombre"`
+		Apellido  string `json:"apellido"`
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+		Rol       string `json:"rol"`
+		Direccion string `json:"direccion"`
+		Telefono  string `json:"telefono"`
 	}
 
-	_, err := h.service.RegistrarUsuario(
-		r.FormValue("nombre"),
-		r.FormValue("apellido"),
-		r.FormValue("email"),
-		r.FormValue("password"),
-		"cliente",
-		r.FormValue("direccion"),
-		r.FormValue("telefono"),
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		http.Error(w, "cuerpo de la petición inválido", http.StatusBadRequest)
+		return
+	}
+
+	usuario, err := h.servicio.RegistrarUsuario(
+		datos.Nombre, datos.Apellido, datos.Email,
+		datos.Password, datos.Rol, datos.Direccion, datos.Telefono,
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(usuario)
 }
 
-// MostrarLogin renderiza el formulario de inicio de sesión
-func (h *UsuarioHandler) MostrarLogin(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/usuario/login.html")
-	if err != nil {
-		http.Error(w, "Error al cargar el template", http.StatusInternalServerError)
+// Autenticar verifica las credenciales y retorna el usuario si son válidas
+func (h *UsuarioHandler) Autenticar(w http.ResponseWriter, r *http.Request) {
+	var datos struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		http.Error(w, "cuerpo de la petición inválido", http.StatusBadRequest)
 		return
 	}
-	tmpl.Execute(w, nil)
+
+	usuario, err := h.servicio.Autenticar(datos.Email, datos.Password)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(usuario)
 }
 
-// ProcesarLogin valida las credenciales mediante el service
-func (h *UsuarioHandler) ProcesarLogin(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error al procesar el formulario", http.StatusBadRequest)
-		return
-	}
-
-	_, err := h.service.Autenticar(
-		r.FormValue("email"),
-		r.FormValue("password"),
-	)
+// ObtenerPorID recupera un usuario según su identificador único
+func (h *UsuarioHandler) ObtenerPorID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "Credenciales inválidas", http.StatusUnauthorized)
+		http.Error(w, "identificador inválido", http.StatusBadRequest)
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-// ListarUsuarios obtiene todos los usuarios y los renderiza
-func (h *UsuarioHandler) ListarUsuarios(w http.ResponseWriter, r *http.Request) {
-	usuarios, err := h.service.ListarUsuarios()
-	if err != nil {
-		http.Error(w, "Error al obtener usuarios", http.StatusInternalServerError)
-		return
-	}
-
-	tmpl, err := template.ParseFiles("templates/usuario/lista.html")
-	if err != nil {
-		http.Error(w, "Error al cargar el template", http.StatusInternalServerError)
-		return
-	}
-
-	tmpl.Execute(w, usuarios)
-}
-
-// MostrarEdicion carga el usuario y renderiza el formulario de edición
-func (h *UsuarioHandler) MostrarEdicion(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		http.Error(w, "ID inválido", http.StatusBadRequest)
-		return
-	}
-
-	usuario, ok := h.service.BuscarPorID(id)
+	usuario, ok := h.servicio.BuscarPorID(id)
 	if !ok {
-		http.Error(w, "Usuario no encontrado", http.StatusNotFound)
+		http.Error(w, "usuario no encontrado", http.StatusNotFound)
 		return
 	}
 
-	tmpl, err := template.ParseFiles("templates/usuario/editar.html")
-	if err != nil {
-		http.Error(w, "Error al cargar el template", http.StatusInternalServerError)
-		return
-	}
-
-	tmpl.Execute(w, usuario)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(usuario)
 }
 
-// ProcesarEdicion actualiza los datos del usuario con los valores del formulario
-func (h *UsuarioHandler) ProcesarEdicion(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+// Listar recupera todos los usuarios registrados en el sistema
+func (h *UsuarioHandler) Listar(w http.ResponseWriter, r *http.Request) {
+	usuarios, err := h.servicio.ListarUsuarios()
 	if err != nil {
-		http.Error(w, "ID inválido", http.StatusBadRequest)
+		http.Error(w, "error al obtener usuarios", http.StatusInternalServerError)
 		return
 	}
 
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error al procesar el formulario", http.StatusBadRequest)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(usuarios)
+}
+
+// Actualizar modifica los datos de un usuario existente
+func (h *UsuarioHandler) Actualizar(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "identificador inválido", http.StatusBadRequest)
 		return
 	}
 
-	// Actualizar datos generales
-	_, err = h.service.ActualizarUsuario(
-		id,
-		r.FormValue("nombre"),
-		r.FormValue("apellido"),
-		r.FormValue("email"),
-		r.FormValue("direccion"),
-		r.FormValue("telefono"),
+	var datos struct {
+		Nombre    string `json:"nombre"`
+		Apellido  string `json:"apellido"`
+		Email     string `json:"email"`
+		Direccion string `json:"direccion"`
+		Telefono  string `json:"telefono"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		http.Error(w, "cuerpo de la petición inválido", http.StatusBadRequest)
+		return
+	}
+
+	usuario, err := h.servicio.ActualizarUsuario(
+		id, datos.Nombre, datos.Apellido,
+		datos.Email, datos.Direccion, datos.Telefono,
 	)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Cambiar contraseña solo si se envió un valor
-	if pw := r.FormValue("password"); pw != "" {
-		if err := h.service.CambiarPassword(id, pw); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	}
-
-	// Cambiar rol solo si se envió un valor
-	if rol := r.FormValue("rol"); rol != "" {
-		if err := h.service.CambiarRol(id, rol); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	}
-
-	http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(usuario)
 }
 
-// EliminarUsuario elimina un usuario por su ID
-func (h *UsuarioHandler) EliminarUsuario(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+// CambiarPassword actualiza la contraseña de un usuario existente
+func (h *UsuarioHandler) CambiarPassword(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "ID inválido", http.StatusBadRequest)
+		http.Error(w, "identificador inválido", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.service.EliminarUsuario(id); err != nil {
+	var datos struct {
+		NuevaPassword string `json:"nueva_password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		http.Error(w, "cuerpo de la petición inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.servicio.CambiarPassword(id, datos.NuevaPassword); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// CambiarRol actualiza el rol de un usuario existente
+func (h *UsuarioHandler) CambiarRol(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "identificador inválido", http.StatusBadRequest)
+		return
+	}
+
+	var datos struct {
+		Rol string `json:"rol"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		http.Error(w, "cuerpo de la petición inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.servicio.CambiarRol(id, datos.Rol); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// Eliminar borra un usuario del sistema por su identificador
+func (h *UsuarioHandler) Eliminar(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "identificador inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.servicio.EliminarUsuario(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
+	w.WriteHeader(http.StatusNoContent)
 }

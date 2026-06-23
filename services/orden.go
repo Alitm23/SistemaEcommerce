@@ -11,15 +11,17 @@ import (
 // Implementa la máquina de estados que controla las transiciones válidas
 // entre los distintos estados del ciclo de vida de una orden.
 type OrdenService struct {
-	repo     *repository.OrdenRepository
-	itemRepo *repository.ItemOrdenRepository
+	repo      *repository.OrdenRepository
+	itemRepo  *repository.ItemOrdenRepository
+	tallaRepo *repository.ProductoTallaRepository
 }
 
 // NuevoOrdenService construye el service inyectando los repositorios necesarios.
 func NuevoOrdenService() *OrdenService {
 	return &OrdenService{
-		repo:     repository.NuevoOrdenRepository(),
-		itemRepo: repository.NuevoItemOrdenRepository(),
+		repo:      repository.NuevoOrdenRepository(),
+		itemRepo:  repository.NuevoItemOrdenRepository(),
+		tallaRepo: repository.NuevoProductoTallaRepository(),
 	}
 }
 
@@ -78,9 +80,9 @@ func (s *OrdenService) CancelarOrden(id int) error {
 	return s.ActualizarEstado(id, "cancelada")
 }
 
-// AgregarItem agrega un producto a la orden con su precio histórico de compra.
-// El precio se guarda en el ítem para preservar el valor al momento de la transacción.
-func (s *OrdenService) AgregarItem(ordenID, productoID, cantidad int, precioCompra float64) (*models.ItemOrden, error) {
+// AgregarItem agrega una talla de producto a la orden con su precio histórico de compra.
+// Descuenta el stock de la talla correspondiente al momento de confirmar el ítem.
+func (s *OrdenService) AgregarItem(ordenID, productoTallaID, cantidad int, precioCompra float64) (*models.ItemOrden, error) {
 	if cantidad <= 0 {
 		return nil, errors.New("la cantidad debe ser mayor a cero")
 	}
@@ -88,14 +90,29 @@ func (s *OrdenService) AgregarItem(ordenID, productoID, cantidad int, precioComp
 		return nil, errors.New("el precio de compra debe ser mayor a cero")
 	}
 
+	// Verificar stock disponible antes de registrar el ítem
+	pt, ok := s.tallaRepo.BuscarPorID(productoTallaID)
+	if !ok {
+		return nil, errors.New("la talla seleccionada no existe")
+	}
+	if pt.Stock < cantidad {
+		return nil, errors.New("stock insuficiente para la talla seleccionada")
+	}
+
 	item := &models.ItemOrden{
-		OrdenID:      ordenID,
-		ProductoID:   productoID,
-		Cantidad:     cantidad,
-		PrecioCompra: precioCompra,
+		OrdenID:         ordenID,
+		ProductoTallaID: productoTallaID,
+		Cantidad:        cantidad,
+		PrecioCompra:    precioCompra,
 	}
 
 	if err := s.itemRepo.Insertar(item); err != nil {
+		return nil, err
+	}
+
+	// Descontar el stock de la talla al confirmar la compra
+	pt.Stock -= cantidad
+	if err := s.tallaRepo.ActualizarStock(pt); err != nil {
 		return nil, err
 	}
 

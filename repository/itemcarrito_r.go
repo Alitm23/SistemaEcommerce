@@ -15,16 +15,17 @@ func NuevoItemCarritoRepository() *ItemCarritoRepository {
 	return &ItemCarritoRepository{}
 }
 
-// Insertar persiste un nuevo ítem en el carrito
+// Insertar persiste un nuevo ítem en el carrito.
+// Referencia producto_talla_id para registrar la talla exacta seleccionada por el usuario.
 func (r *ItemCarritoRepository) Insertar(i *models.ItemCarrito) error {
 	query := `
-		INSERT INTO item_carrito (carrito_id, producto_id, cantidad, precio_unitario)
+		INSERT INTO item_carrito (carrito_id, producto_talla_id, cantidad, precio_unitario)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`
 	return db.DB.QueryRow(
 		query,
-		i.CarritoID, i.ProductoID, i.Cantidad, i.PrecioUnitario,
+		i.CarritoID, i.ProductoTallaID, i.Cantidad, i.PrecioUnitario,
 	).Scan(&i.ID)
 }
 
@@ -70,7 +71,7 @@ func (r *ItemCarritoRepository) Eliminar(id int) error {
 // ListarPorCarrito recupera todos los ítems asociados a un carrito específico
 func (r *ItemCarritoRepository) ListarPorCarrito(carritoID int) ([]models.ItemCarrito, error) {
 	query := `
-		SELECT id, carrito_id, producto_id, cantidad, precio_unitario
+		SELECT id, carrito_id, producto_talla_id, cantidad, precio_unitario
 		FROM item_carrito
 		WHERE carrito_id = $1
 	`
@@ -84,11 +85,10 @@ func (r *ItemCarritoRepository) ListarPorCarrito(carritoID int) ([]models.ItemCa
 
 	for filas.Next() {
 		var item models.ItemCarrito
-		err := filas.Scan(
-			&item.ID, &item.CarritoID, &item.ProductoID,
+		if err := filas.Scan(
+			&item.ID, &item.CarritoID, &item.ProductoTallaID,
 			&item.Cantidad, &item.PrecioUnitario,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, item)

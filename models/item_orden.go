@@ -7,9 +7,9 @@ type ControlItemOrden interface {
 }
 
 type ItemOrden struct {
-	ID           int
-	OrdenID      int
-	ProductoID   int
-	Cantidad     int
-	PrecioCompra float64
+	ID              int
+	OrdenID         int
+	ProductoTallaID int
+	Cantidad        int
+	PrecioCompra    float64
 }

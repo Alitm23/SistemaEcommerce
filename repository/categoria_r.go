@@ -18,21 +18,21 @@ func NuevoCategoriaRepository() *CategoriaRepository {
 // Insertar persiste una nueva categoría en la base de datos
 func (r *CategoriaRepository) Insertar(c *models.Categoria) error {
 	query := `
-		INSERT INTO categoria (nombre)
-		VALUES ($1)
+		INSERT INTO categoria (nombre, descripcion)
+		VALUES ($1, $2)
 		RETURNING id
 	`
-	return db.DB.QueryRow(query, c.Nombre).Scan(&c.ID)
+	return db.DB.QueryRow(query, c.Nombre, c.Descripcion).Scan(&c.ID)
 }
 
-// Actualizar modifica el nombre de una categoría existente
+// Actualizar modifica el nombre y descripción de una categoría existente
 func (r *CategoriaRepository) Actualizar(c *models.Categoria) error {
 	query := `
 		UPDATE categoria
-		SET nombre = $1
-		WHERE id = $2
+		SET nombre = $1, descripcion = $2
+		WHERE id = $3
 	`
-	resultado, err := db.DB.Exec(query, c.Nombre, c.ID)
+	resultado, err := db.DB.Exec(query, c.Nombre, c.Descripcion, c.ID)
 	if err != nil {
 		return err
 	}
@@ -66,9 +66,9 @@ func (r *CategoriaRepository) Eliminar(id int) error {
 
 // BuscarPorID recupera una categoría según su identificador único
 func (r *CategoriaRepository) BuscarPorID(id int) (*models.Categoria, bool) {
-	query := `SELECT id, nombre FROM categoria WHERE id = $1`
+	query := `SELECT id, nombre, descripcion FROM categoria WHERE id = $1`
 	c := &models.Categoria{}
-	err := db.DB.QueryRow(query, id).Scan(&c.ID, &c.Nombre)
+	err := db.DB.QueryRow(query, id).Scan(&c.ID, &c.Nombre, &c.Descripcion)
 	if err != nil {
 		return nil, false
 	}
@@ -78,7 +78,7 @@ func (r *CategoriaRepository) BuscarPorID(id int) (*models.Categoria, bool) {
 // ListarTodas recupera todas las categorías ordenadas por identificador
 func (r *CategoriaRepository) ListarTodas() ([]models.Categoria, error) {
 	filas, err := db.DB.Query(
-		`SELECT id, nombre FROM categoria ORDER BY id ASC`,
+		`SELECT id, nombre, descripcion FROM categoria ORDER BY id ASC`,
 	)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (r *CategoriaRepository) ListarTodas() ([]models.Categoria, error) {
 
 	for filas.Next() {
 		var c models.Categoria
-		if err := filas.Scan(&c.ID, &c.Nombre); err != nil {
+		if err := filas.Scan(&c.ID, &c.Nombre, &c.Descripcion); err != nil {
 			return nil, err
 		}
 		categorias = append(categorias, c)

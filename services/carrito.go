@@ -11,16 +11,17 @@ import (
 // Controla el ciclo de vida del carrito y la gestión de sus ítems,
 // aplicando reglas como la unicidad del carrito activo por usuario.
 type CarritoService struct {
-	repo     *repository.CarritoRepository
-	itemRepo *repository.ItemCarritoRepository
+	repo      *repository.CarritoRepository
+	itemRepo  *repository.ItemCarritoRepository
+	tallaRepo *repository.ProductoTallaRepository
 }
 
 // NuevoCarritoService construye el service inyectando los repositorios necesarios.
-// Se inyectan dos repositorios porque el carrito gestiona también sus ítems.
 func NuevoCarritoService() *CarritoService {
 	return &CarritoService{
-		repo:     repository.NuevoCarritoRepository(),
-		itemRepo: repository.NuevoItemCarritoRepository(),
+		repo:      repository.NuevoCarritoRepository(),
+		itemRepo:  repository.NuevoItemCarritoRepository(),
+		tallaRepo: repository.NuevoProductoTallaRepository(),
 	}
 }
 
@@ -56,7 +57,6 @@ func (s *CarritoService) CerrarCarrito(id int) error {
 		return errors.New("carrito no encontrado")
 	}
 
-	// Validar la transición de estado antes de persistir
 	if c.Estado != "activo" {
 		return errors.New("solo se puede cerrar un carrito en estado activo")
 	}
@@ -65,9 +65,9 @@ func (s *CarritoService) CerrarCarrito(id int) error {
 	return s.repo.ActualizarEstado(c)
 }
 
-// AgregarItem agrega un producto al carrito con su cantidad y precio unitario.
-// Valida que la cantidad sea positiva antes de registrar el ítem.
-func (s *CarritoService) AgregarItem(carritoID, productoID, cantidad int, precioUnitario float64) (*models.ItemCarrito, error) {
+// AgregarItem agrega una talla de producto al carrito con su cantidad y precio unitario.
+// Valida que exista stock suficiente en la talla seleccionada antes de agregar el ítem.
+func (s *CarritoService) AgregarItem(carritoID, productoTallaID, cantidad int, precioUnitario float64) (*models.ItemCarrito, error) {
 	if cantidad <= 0 {
 		return nil, errors.New("la cantidad debe ser mayor a cero")
 	}
@@ -75,11 +75,20 @@ func (s *CarritoService) AgregarItem(carritoID, productoID, cantidad int, precio
 		return nil, errors.New("el precio unitario debe ser mayor a cero")
 	}
 
+	// Regla de negocio: verificar que la talla existe y tiene stock suficiente
+	pt, ok := s.tallaRepo.BuscarPorID(productoTallaID)
+	if !ok {
+		return nil, errors.New("la talla seleccionada no existe")
+	}
+	if pt.Stock < cantidad {
+		return nil, errors.New("stock insuficiente para la talla seleccionada")
+	}
+
 	item := &models.ItemCarrito{
-		CarritoID:      carritoID,
-		ProductoID:     productoID,
-		Cantidad:       cantidad,
-		PrecioUnitario: precioUnitario,
+		CarritoID:       carritoID,
+		ProductoTallaID: productoTallaID,
+		Cantidad:        cantidad,
+		PrecioUnitario:  precioUnitario,
 	}
 
 	if err := s.itemRepo.Insertar(item); err != nil {
@@ -105,15 +114,13 @@ func (s *CarritoService) QuitarItem(itemID int) error {
 }
 
 // ObtenerItems recupera todos los ítems de un carrito y calcula el total acumulado.
-// El total se calcula en el service porque es lógica de presentación de negocio,
-// no una responsabilidad del repositorio ni del handler.
+// El total se calcula en el service porque es lógica de negocio, no responsabilidad del repositorio.
 func (s *CarritoService) ObtenerItems(carritoID int) ([]models.ItemCarrito, float64, error) {
 	items, err := s.itemRepo.ListarPorCarrito(carritoID)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	// Calcular el total sumando el subtotal de cada ítem
 	var total float64
 	for _, item := range items {
 		total += float64(item.Cantidad) * item.PrecioUnitario
