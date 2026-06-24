@@ -8,8 +8,7 @@ import (
 )
 
 // CarritoService gestiona la lógica de negocio del carrito de compras.
-// Controla el ciclo de vida del carrito y la gestión de sus ítems,
-// aplicando reglas como la unicidad del carrito activo por usuario.
+// Controla el ciclo de vida del carrito y la gestión de sus ítems, aplicando reglas como la unicidad del carrito activo por usuario.
 type CarritoService struct {
 	repo      *repository.CarritoRepository
 	itemRepo  *repository.ItemCarritoRepository
@@ -28,13 +27,11 @@ func NuevoCarritoService() *CarritoService {
 // AbrirCarrito crea un nuevo carrito en estado 'activo' para el usuario indicado.
 // Verifica previamente que el usuario no tenga ya un carrito activo.
 func (s *CarritoService) AbrirCarrito(usuarioID int) (*models.Carrito, error) {
-	if usuarioID <= 0 {
-		return nil, errors.New("identificador de usuario inválido")
-	}
-
-	// Regla de negocio: un usuario solo puede tener un carrito activo a la vez
-	if _, ok := s.repo.BuscarActivoPorUsuario(usuarioID); ok {
-		return nil, errors.New("el usuario ya tiene un carrito activo")
+	// Solo si el usuario está logueado, verificamos que no tenga otro activo
+	if usuarioID > 0 {
+		if _, ok := s.repo.BuscarActivoPorUsuario(usuarioID); ok {
+			return nil, errors.New("el usuario ya tiene un carrito activo")
+		}
 	}
 
 	c := &models.Carrito{
@@ -114,7 +111,6 @@ func (s *CarritoService) QuitarItem(itemID int) error {
 }
 
 // ObtenerItems recupera todos los ítems de un carrito y calcula el total acumulado.
-// El total se calcula en el service porque es lógica de negocio, no responsabilidad del repositorio.
 func (s *CarritoService) ObtenerItems(carritoID int) ([]models.ItemCarrito, float64, error) {
 	items, err := s.itemRepo.ListarPorCarrito(carritoID)
 	if err != nil {

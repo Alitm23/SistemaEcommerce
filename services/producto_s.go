@@ -8,15 +8,13 @@ import (
 )
 
 // ProductoService gestiona la lógica de negocio relacionada con los productos.
-// Centraliza las validaciones de precio y nombre antes de delegar al repositorio,
-// y administra las tallas que determinan el stock real de cada joya.
+// Centraliza las validaciones de precio y nombre antes de delegar al repositorioy administra las tallas que determinan el stock real de cada joya.
 type ProductoService struct {
 	repo      *repository.ProductoRepository
 	tallaRepo *repository.ProductoTallaRepository
 }
 
-// NuevoProductoService construye el service inyectando los repositorios necesarios.
-// Se inyectan dos repositorios porque el producto gestiona también sus tallas.
+// NuevoProductoService construye el service inyectando los repositorios necesarios como las tallas
 func NuevoProductoService() *ProductoService {
 	return &ProductoService{
 		repo:      repository.NuevoProductoRepository(),
@@ -25,7 +23,6 @@ func NuevoProductoService() *ProductoService {
 }
 
 // CrearProducto valida los datos del producto y lo persiste a través del repositorio.
-// El stock ya no se recibe aquí: se agrega posteriormente talla por talla con AgregarTalla.
 func (s *ProductoService) CrearProducto(categoriaID int, nombre, descripcion, material string, precio float64) (*models.Producto, error) {
 	if nombre == "" {
 		return nil, errors.New("el nombre del producto no puede estar vacío")
@@ -105,7 +102,6 @@ func (s *ProductoService) AgregarTalla(productoID int, talla string, stock int) 
 }
 
 // ActualizarStockTalla aplica la regla de negocio que impide que el stock sea negativo.
-// Recibe un delta: positivo para aumentar existencias, negativo para reducirlas.
 func (s *ProductoService) ActualizarStockTalla(tallaID, delta int) error {
 	pt, ok := s.tallaRepo.BuscarPorID(tallaID)
 	if !ok {
@@ -137,7 +133,6 @@ func (s *ProductoService) BuscarTallaPorID(tallaID int) (*models.ProductoTalla, 
 }
 
 // EliminarProducto elimina un producto del sistema por su identificador.
-// Las tallas asociadas se eliminan automáticamente por ON DELETE CASCADE.
 func (s *ProductoService) EliminarProducto(id int) error {
 	return s.repo.Eliminar(id)
 }

@@ -27,8 +27,7 @@ type ControlProductoTalla interface {
 	Eliminar() error
 }
 
-// ProductoTalla registra cada variante de talla disponible para un producto
-// y almacena el stock real de esa combinación producto-talla.
+// ProductoTalla registra cada variante de talla disponible para un producto y almacena el stock real de esa combinación producto-talla.
 type ProductoTalla struct {
 	ID         int
 	ProductoID int

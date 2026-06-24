@@ -55,7 +55,6 @@ func (r *ProductoRepository) Actualizar(p *models.Producto) error {
 }
 
 // Eliminar borra un producto de la base de datos por su ID.
-// Las filas de producto_talla se eliminan automáticamente por ON DELETE CASCADE.
 func (r *ProductoRepository) Eliminar(id int) error {
 	resultado, err := db.DB.Exec(`DELETE FROM producto WHERE id = $1`, id)
 	if err != nil {

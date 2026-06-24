@@ -26,7 +26,7 @@ func NuevoOrdenService() *OrdenService {
 }
 
 // GenerarOrden crea una nueva orden con estado inicial 'pendiente'.
-// Valida que el total sea positivo antes de persistir.
+// Valida que el total sea positivo antes de crearse.
 func (s *OrdenService) GenerarOrden(usuarioID int, total float64) (*models.Orden, error) {
 	if total <= 0 {
 		return nil, errors.New("el total de la orden debe ser mayor a cero")
@@ -46,7 +46,6 @@ func (s *OrdenService) GenerarOrden(usuarioID int, total float64) (*models.Orden
 }
 
 // ActualizarEstado aplica la máquina de estados de la orden.
-// Una orden entregada no puede cambiar de estado — regla de negocio irreversible.
 func (s *OrdenService) ActualizarEstado(id int, nuevoEstado string) error {
 	estados := map[string]bool{
 		"pendiente":  true,
@@ -65,7 +64,7 @@ func (s *OrdenService) ActualizarEstado(id int, nuevoEstado string) error {
 		return errors.New("orden no encontrada")
 	}
 
-	// Regla de negocio: una orden entregada es un estado terminal irreversible
+	// Regla de negocio: una orden entregada es un estado irreversible
 	if o.Estado == "entregada" {
 		return errors.New("una orden entregada no puede cambiar de estado")
 	}
@@ -80,7 +79,6 @@ func (s *OrdenService) CancelarOrden(id int) error {
 	return s.ActualizarEstado(id, "cancelada")
 }
 
-// AgregarItem agrega una talla de producto a la orden con su precio histórico de compra.
 // Descuenta el stock de la talla correspondiente al momento de confirmar el ítem.
 func (s *OrdenService) AgregarItem(ordenID, productoTallaID, cantidad int, precioCompra float64) (*models.ItemOrden, error) {
 	if cantidad <= 0 {

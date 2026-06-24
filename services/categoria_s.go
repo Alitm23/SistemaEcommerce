@@ -8,8 +8,7 @@ import (
 )
 
 // CategoriaService gestiona la lógica de negocio relacionada con las categorías.
-// Actúa como intermediario entre los handlers HTTP y el repositorio de datos,
-// aplicando validaciones y reglas antes de delegar la persistencia.
+// Actúa como intermediario entre los handlers HTTP y el repositorio de datos, aplicando validaciones y reglas antes de delegar la persistencia.
 type CategoriaService struct {
 	repo *repository.CategoriaRepository
 }
@@ -59,7 +58,6 @@ func (s *CategoriaService) ActualizarCategoria(id int, nombre, descripcion strin
 }
 
 // EliminarCategoria elimina una categoría por su identificador.
-// Si tiene productos asociados, PostgreSQL retornará un error de integridad referencial.
 func (s *CategoriaService) EliminarCategoria(id int) error {
 	return s.repo.Eliminar(id)
 }
