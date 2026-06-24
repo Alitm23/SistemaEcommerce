@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -15,11 +14,6 @@ import (
 var DB *sql.DB
 
 func Connect() (*sql.DB, error) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Aviso: No se encontró archivo .env")
-	}
-
 	// variables de entorno
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
