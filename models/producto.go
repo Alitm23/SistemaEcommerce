@@ -9,13 +9,15 @@ type ControlProducto interface {
 }
 
 type Producto struct {
-	ID           int
-	CategoriaID  int // FK hacia Categoria (Anillos, Collares, Aretes)
-	MaterialID   int // FK hacia Material (Plata, Baño en oro)
-	Nombre       string
-	Descripcion  string
-	Precio       float64
-	FechaIngreso time.Time
+	ID                int
+	CategoriaID       int // FK hacia Categoria (Anillos, Collares, Aretes)
+	Nombre            string
+	Descripcion       string
+	Material          string
+	Precio            float64
+	FechaIngreso      time.Time
+	ImagenURL         string
+	TallasDisponibles []ProductoTalla
 }
 
 // ControlProductoTalla define las operaciones de gestión de tallas y stock
@@ -32,17 +34,4 @@ type ProductoTalla struct {
 	ProductoID int
 	Talla      string
 	Stock      int
-}
-
-// ControlMaterial define las operaciones básicas de gestión de materiales
-type ControlMaterial interface {
-	Registrar() error
-	Actualizar() error
-	Eliminar() error
-}
-
-// Material representa el tipo de material de una joya (oro, plata, especiales, etc.)
-type Material struct {
-	ID     int
-	Nombre string
 }

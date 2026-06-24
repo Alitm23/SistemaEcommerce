@@ -26,7 +26,7 @@ func NuevoProductoService() *ProductoService {
 
 // CrearProducto valida los datos del producto y lo persiste a través del repositorio.
 // El stock ya no se recibe aquí: se agrega posteriormente talla por talla con AgregarTalla.
-func (s *ProductoService) CrearProducto(categoriaID, materialID int, nombre, descripcion string, precio float64) (*models.Producto, error) {
+func (s *ProductoService) CrearProducto(categoriaID int, nombre, descripcion, material string, precio float64) (*models.Producto, error) {
 	if nombre == "" {
 		return nil, errors.New("el nombre del producto no puede estar vacío")
 	}
@@ -36,8 +36,8 @@ func (s *ProductoService) CrearProducto(categoriaID, materialID int, nombre, des
 
 	p := &models.Producto{
 		CategoriaID: categoriaID,
-		MaterialID:  materialID,
 		Nombre:      nombre,
+		Material:    material,
 		Descripcion: descripcion,
 		Precio:      precio,
 	}
@@ -50,7 +50,7 @@ func (s *ProductoService) CrearProducto(categoriaID, materialID int, nombre, des
 }
 
 // ActualizarProducto verifica la existencia del producto y aplica los nuevos valores
-func (s *ProductoService) ActualizarProducto(id, categoriaID, materialID int, nombre, descripcion string, precio float64) (*models.Producto, error) {
+func (s *ProductoService) ActualizarProducto(id, categoriaID int, nombre, descripcion, material string, precio float64) (*models.Producto, error) {
 	if nombre == "" {
 		return nil, errors.New("el nombre del producto no puede estar vacío")
 	}
@@ -65,9 +65,9 @@ func (s *ProductoService) ActualizarProducto(id, categoriaID, materialID int, no
 	}
 
 	p.CategoriaID = categoriaID
-	p.MaterialID = materialID
 	p.Nombre = nombre
 	p.Descripcion = descripcion
+	p.Material = material
 	p.Precio = precio
 
 	if err := s.repo.Actualizar(p); err != nil {
@@ -155,9 +155,4 @@ func (s *ProductoService) ListarProductos() ([]models.Producto, error) {
 // ListarPorCategoria recupera todos los productos de una categoría específica
 func (s *ProductoService) ListarPorCategoria(categoriaID int) ([]models.Producto, error) {
 	return s.repo.ListarPorCategoria(categoriaID)
-}
-
-// ListarPorMaterial recupera todos los productos filtrados por material
-func (s *ProductoService) ListarPorMaterial(materialID int) ([]models.Producto, error) {
-	return s.repo.ListarPorMaterial(materialID)
 }
