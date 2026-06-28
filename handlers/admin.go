@@ -201,7 +201,6 @@ func EditarProductoAdmin(w http.ResponseWriter, r *http.Request) {
 	if !redirigirSiNoAdmin(w, r) {
 		return
 	}
-
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id <= 0 {
 		http.Error(w, "ID de producto invalido", http.StatusBadRequest)
@@ -274,6 +273,23 @@ func GestionOrdenes(w http.ResponseWriter, r *http.Request) {
 		Ordenes:  ordenes,
 		Detalles: detalles,
 	})
+}
+
+func CancelarOrdenAdmin(w http.ResponseWriter, r *http.Request) {
+	if !redirigirSiNoAdmin(w, r) {
+		return
+	}
+
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id <= 0 {
+		http.Error(w, "ID de orden invalido", http.StatusBadRequest)
+		return
+	}
+	if err := models.CancelarOrdenPendiente(id); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	http.Redirect(w, r, "/admin/ordenes", http.StatusSeeOther)
 }
 
 func GestionUsuarios(w http.ResponseWriter, r *http.Request) {
