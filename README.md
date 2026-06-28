@@ -4,7 +4,7 @@
 |---|---|
 | **Nombre del Proyecto** | Sistema de Gestión E-commerce |
 | **Estudiante** | Nataly Tituaña |
-| **Fecha** | 24 de mayo de 2026 |
+| **Fecha** | 28 de junio de 2026 |
 | **Materia** | Programación Orientada a Objetos |
 | **Docente** | Ing. Milton Palacios 
 
