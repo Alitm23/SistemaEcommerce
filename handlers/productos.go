@@ -1,66 +1,84 @@
 package handlers
 
 import (
-	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/Alitm23/SistemaEcommerce/models"
-	"github.com/Alitm23/SistemaEcommerce/services"
+	"github.com/gorilla/mux"
 )
 
-type ProductoHandler struct {
-	productoService *services.ProductoService
+type catalogoViewData struct {
+	Productos        []models.Producto
+	CategoriaActiva  int
+	Busqueda         string
+	Material         string
+	PrecioMin        string
+	PrecioMax        string
+	TotalResultados  int
 }
 
-func NuevoProductoHandler(ps *services.ProductoService) *ProductoHandler {
-	return &ProductoHandler{
-		productoService: ps,
-	}
+type detalleProductoViewData struct {
+	Producto *models.Producto
+	Tallas   []models.ProductoTalla
 }
 
-// ListarProductos extrae el catálogo filtrado o completo y renderiza la vista
-func (h *ProductoHandler) ListarProductos(w http.ResponseWriter, r *http.Request) {
-	// 1. Leemos si hay un filtro en la URL (ej: /productos?categoria=2)
-	categoriaStr := r.URL.Query().Get("categoria")
+// ListarProductos maneja la solicitud para mostrar todos los productos.
+func ListarProductos(w http.ResponseWriter, r *http.Request) {
+	categoriaID, _ := strconv.Atoi(r.URL.Query().Get("categoria"))
+	precioMin, _ := strconv.ParseFloat(r.URL.Query().Get("precio_min"), 64)
+	precioMax, _ := strconv.ParseFloat(r.URL.Query().Get("precio_max"), 64)
 
-	var productos []models.Producto
-	var err error
-	categoriaActiva := 0 // 0 significará "Todos"
-
-	// 2. Decidimos qué pedirle a la Base de Datos
-	if categoriaStr != "" {
-		categoriaActiva, _ = strconv.Atoi(categoriaStr)
-		productos, err = h.productoService.ListarPorCategoria(categoriaActiva)
-	} else {
-		productos, err = h.productoService.ListarProductos()
+	filtros := models.FiltrosProducto{
+		Query:       r.URL.Query().Get("q"),
+		Material:    r.URL.Query().Get("material"),
+		CategoriaID: categoriaID,
+		PrecioMin:   precioMin,
+		PrecioMax:   precioMax,
 	}
 
+	productos, err := models.ListarProductosFiltrados(filtros)
 	if err != nil {
-		log.Println("Error al cargar productos:", err)
-		http.Error(w, "Error interno del servidor", http.StatusInternalServerError)
+		http.Error(w, "Error al obtener productos", http.StatusInternalServerError)
 		return
 	}
 
-	// 3. Empaquetamos las joyas y la categoría activa
-	datosPantalla := map[string]interface{}{
-		"Productos":       productos,
-		"CategoriaActiva": categoriaActiva,
+	data := catalogoViewData{
+		Productos:       productos,
+		CategoriaActiva: categoriaID,
+		Busqueda:        filtros.Query,
+		Material:        filtros.Material,
+		PrecioMin:       r.URL.Query().Get("precio_min"),
+		PrecioMax:       r.URL.Query().Get("precio_max"),
+		TotalResultados: len(productos),
 	}
+	renderTemplate(w, http.StatusOK, []string{"templates/base.html", "templates/catalogo.html"}, "base", data)
+}
 
-	// 4. Renderizamos
-	archivos := []string{
-		"templates/base.html",
-		"templates/catalogo.html",
-	}
-
-	tmpl, err := template.ParseFiles(archivos...)
+// DetalleProducto maneja la solicitud para mostrar los detalles de un producto especifico.
+func DetalleProducto(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		log.Println("Error al parsear templates:", err)
-		http.Error(w, "Error al procesar la vista", http.StatusInternalServerError)
+		http.Error(w, "Producto no encontrado", http.StatusNotFound)
 		return
 	}
 
-	tmpl.ExecuteTemplate(w, "base", datosPantalla)
+	producto, err := models.ObtenerProductoPorID(id)
+	if err != nil {
+		http.Error(w, "Producto no encontrado", http.StatusNotFound)
+		return
+	}
+
+	tallas, err := models.ListarTallasPorProducto(id)
+	if err != nil {
+		http.Error(w, "Error al obtener tallas", http.StatusInternalServerError)
+		return
+	}
+
+	data := detalleProductoViewData{
+		Producto: producto,
+		Tallas:   tallas,
+	}
+	renderTemplate(w, http.StatusOK, []string{"templates/base.html", "templates/detalle.html"}, "base", data)
 }
