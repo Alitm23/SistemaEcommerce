@@ -34,6 +34,7 @@ El proyecto está desarrollado en **Go (Golang)** y hace uso de las siguientes d
 * **Bcrypt (`golang.org/x/crypto/bcrypt`):** Algoritmo de hash para encriptar contraseñas y evitar que se guarden en texto plano.
 * **JWT (`github.com/golang-jwt/jwt/v5`):** Utilizado para la generación y validación de tokens garantizando una autenticación segura.
 * **Godotenv (`github.com/joho/godotenv`):** Para la carga y configuración de variables de entorno desde un archivo `.env`.
+* **Gorilla Mux**: se encarga de gestionar las rutas.
 
 **Paquetes Nativos de Go:**
 * `encoding/json`: Para la conversión de structs a formato JSON en la comunicación de la API REST.
