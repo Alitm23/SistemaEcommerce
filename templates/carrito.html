@@ -1,0 +1,85 @@
+{{define "content"}}
+<div class="container py-5">
+    <a href="/productos" class="cart-back-link mb-4 d-inline-flex align-items-center gap-2">
+        <span aria-hidden="true">&larr;</span>
+        <span>Volver al Catalogo</span>
+    </a>
+    <h1 class="mb-5" style="font-family: 'Playfair Display', serif; font-size: 2.5rem; color: #111;">Mi Carrito</h1>
+
+    {{if eq (len .Items) 0}}
+        <div class="text-center py-5">
+            <p class="text-muted fs-5 mb-4">Tu carrito está vacío en este momento.</p>
+            <a href="/productos" class="btn btn-outline-dark rounded-0 px-4 py-2 text-uppercase" style="letter-spacing: 1px;">Explorar Catálogo</a>
+        </div>
+    {{else}}
+        <div class="row gx-5">
+            <div class="col-lg-8 mb-5 mb-lg-0">
+                <div class="table-responsive">
+                    <table class="table align-middle border-bottom">
+                        <thead class="text-muted text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px;">
+                            <tr>
+                                <th scope="col" class="border-0 pb-3">Producto</th>
+                                <th scope="col" class="border-0 pb-3 text-center">Cantidad</th>
+                                <th scope="col" class="border-0 pb-3 text-end">Subtotal</th>
+                                <th scope="col" class="border-0 pb-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Items}}
+                            <tr>
+                                <td class="py-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div style="width: 80px; height: 80px; background-color: #f8f6f0; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                            <img src="{{.ProductoURL}}" alt="Joya" style="max-height: 100%; object-fit: contain;">
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1" style="font-family: 'Playfair Display', serif; font-size: 1.1rem;">{{.ProductoNombre}}</h6>
+                                            <small class="text-muted d-block">Talla: {{.TallaNombre}}</small>
+                                            <small class="text-muted d-block">${{.PrecioUnitario}} c/u</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <td class="py-4 text-center">
+                                    <span class="border px-3 py-1">{{.Cantidad}}</span>
+                                </td>
+                                
+                                <td class="py-4 text-end">
+                                    <form action="/carrito/quitar/{{.ID}}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-link text-muted p-0 border-0 text-decoration-none" title="Eliminar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="bg-white p-4 shadow-sm" style="border: 1px solid #eaeaea; border-radius: 12px;">
+                    <h5 class="mb-4 text-uppercase" style="font-size: 1rem; letter-spacing: 1px;">Resumen de orden</h5>
+                    
+                    <div class="d-flex justify-content-between mb-3 text-muted">
+                        <span>Subtotal ({{len .Items}} piezas)</span>
+                        <span>${{printf "%.2f" .Total}}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4 text-muted border-bottom pb-4">
+                        <span>Envío gratis</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-4">
+                        <span style="font-size: 1.1rem; font-weight: 500;">Total</span>
+                        <span style="font-size: 1.2rem; font-weight: 600; color: #111;">${{printf "%.2f" .Total}}</span>
+                    </div>
+
+                    <a href="/checkout" class="btn btn-dark w-100 rounded-0 py-3 text-uppercase" style="letter-spacing: 1px;">
+                        Proceder al pago
+                    </a>
+                </div>
+            </div>
+        </div>
+    {{end}}
+</div>
+{{end}}

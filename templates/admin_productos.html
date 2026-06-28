@@ -1,0 +1,165 @@
+{{define "admin_content"}}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Inventario</h1>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-dark rounded-0" data-bs-toggle="modal" data-bs-target="#modalNuevaCategoria">
+            + Agregar Categoria
+        </button>
+        <button class="btn btn-dark rounded-0" data-bs-toggle="modal" data-bs-target="#modalNuevoProducto">
+            + Agregar Nuevo Producto
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm rounded-0 border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Material</th>
+                        <th>Tallas/Stock</th>
+                        <th>Precio</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Productos}}
+                    <tr>
+                        <td>{{.ID}}</td>
+                        <td>{{.Nombre}}</td>
+                        <td>{{.Material}}</td>
+                        <td>
+                            <div class="stock-container">
+                                {{range .Tallas}}
+                                    <span class="badge text-bg-light border badge-compact">
+                                        {{.Talla}}: {{.Stock}}
+                                    </span>
+                                {{else}}
+                                    <span class="text-muted small">Sin stock</span>
+                                {{end}}
+                            </div>
+                        </td>
+                        <td>${{printf "%.2f" .Precio}}</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-dark rounded-0 me-2" data-bs-toggle="modal" data-bs-target="#modalEditarProducto{{.ID}}">
+                                Editar
+                            </button>
+                            <form action="/admin/productos/eliminar?id={{.ID}}" method="POST" class="d-inline" onsubmit="return confirm('Estas seguro de que deseas eliminar este producto?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-0">Borrar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No hay productos registrados.</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{{range .Productos}}
+{{$producto := .}}
+<div class="modal fade" id="modalEditarProducto{{.ID}}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-0">
+            <form action="/admin/productos/editar?id={{.ID}}" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <select name="categoria_id" class="form-select rounded-0 mb-3" required>
+                        {{range $.Categorias}}
+                            <option value="{{.ID}}" {{if eq .ID $producto.CategoriaID}}selected{{end}}>{{.Nombre}}</option>
+                        {{end}}
+                    </select>
+                    <input type="text" name="nombre" class="form-control mb-3" value="{{.Nombre}}" placeholder="Nombre de la joya" required>
+                    <input type="text" name="material" class="form-control mb-3" value="{{.Material}}" placeholder="Material" required>
+                    <textarea name="descripcion" class="form-control mb-3" placeholder="Descripcion breve">{{.Descripcion}}</textarea>
+                    <input type="number" step="0.01" min="0" name="precio" class="form-control mb-3" value="{{printf "%.2f" .Precio}}" placeholder="Precio ($)" required>
+                    <input type="hidden" name="imagen_actual" value="{{.ImagenURL}}">
+                    <label class="form-label text-muted small">Imagen del producto</label>
+                    <input type="file" name="imagen" class="form-control mb-3" accept="image/*">
+                    {{if .ImagenURL}}
+                        <small class="text-muted d-block mb-3">Imagen actual: {{.ImagenURL}}</small>
+                    {{end}}
+                    <label class="form-label text-muted small">Stock por talla</label>
+                    {{range .Tallas}}
+                        <div class="input-group mb-2">
+                            <span class="input-group-text rounded-0">{{.Talla}}</span>
+                            <input type="number" min="0" name="stock_{{.ID}}" class="form-control rounded-0" value="{{.Stock}}">
+                        </div>
+                    {{else}}
+                        <p class="text-muted mb-0">Este producto no tiene tallas registradas.</p>
+                    {{end}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark rounded-0" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark rounded-0">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{end}}
+
+<div class="modal fade" id="modalNuevoProducto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-0">
+            <form action="/admin/productos/nuevo" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Nuevo Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <select name="categoria_id" class="form-select rounded-0 mb-3" required>
+                        <option value="">Selecciona una categoria</option>
+                        {{range .Categorias}}
+                            <option value="{{.ID}}">{{.Nombre}}</option>
+                        {{end}}
+                    </select>
+                    <input type="text" name="nombre" class="form-control mb-3" placeholder="Nombre de la joya" required>
+                    <input type="text" name="material" class="form-control mb-3" placeholder="Material (Ej. Plata 925)" required>
+                    <textarea name="descripcion" class="form-control mb-3" placeholder="Descripcion breve"></textarea>
+                    <input type="number" step="0.01" min="0" name="precio" class="form-control mb-3" placeholder="Precio ($)" required>
+                    <input type="text" name="talla" class="form-control mb-3" placeholder="Talla inicial (Ej. Unica, 6, Ajustable)" required>
+                    <input type="number" min="0" name="stock" class="form-control mb-3" placeholder="Stock inicial" required>
+                    <label class="form-label text-muted small">Imagen del producto</label>
+                    <input type="file" name="imagen" class="form-control" accept="image/*">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark rounded-0" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark rounded-0">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevaCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-0">
+            <form action="/admin/categorias/nueva" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Categoria</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" name="nombre" class="form-control mb-3" placeholder="Nombre de la categoria" required>
+                    <textarea name="descripcion" class="form-control" placeholder="Descripcion breve"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark rounded-0" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark rounded-0">Guardar Categoria</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,80 @@
+{{define "content"}}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-5">
+            
+            <div class="bg-white p-5 shadow-sm" style="border-radius: 12px; border: 1px solid #eaeaea;">
+                
+                <ul class="nav nav-justified mb-5" id="authTabs" role="tablist" style="border-bottom: 1px solid #eaeaea;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link auth-tab active w-100 text-uppercase rounded-0" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-pane" type="button" role="tab" aria-controls="login-pane" aria-selected="true" style="letter-spacing: 1px; font-size: 0.9em;">
+                            Iniciar Sesión
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link auth-tab w-100 text-uppercase rounded-0" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-pane" type="button" role="tab" aria-controls="register-pane" aria-selected="false" style="letter-spacing: 1px; font-size: 0.9em;">
+                            Crear Cuenta
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="authTabsContent">
+                    
+                    <div class="tab-pane fade show active" id="login-pane" role="tabpanel" aria-labelledby="login-tab">
+                        <form action="/login" method="POST">
+                            <div class="mb-4">
+                                <label class="d-block custom-label text-uppercase">Correo Electrónico</label>
+                                <input type="email" name="email" class="form-control form-control-lg rounded-0 fs-6" placeholder="usuario@ejemplo.com" value="{{.Email}}" required>
+                            </div>
+                            
+                            <div class="mb-5">
+                                <label class="d-block custom-label text-uppercase">Contraseña</label>
+                                <input type="password" name="password" class="form-control form-control-lg rounded-0 fs-6" placeholder="" required>
+                                
+                                {{if .Error}}
+                                    <div class="mt-2 text-danger" style="font-size: 0.85em; font-weight: 500;">
+                                        {{.Error}}
+                                    </div>
+                                {{end}}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-dark w-100 rounded-0 py-3 text-uppercase" style="letter-spacing: 1px;">
+                                Ingresar
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="register-pane" role="tabpanel" aria-labelledby="register-tab">
+                        <form action="/registro" method="POST">
+                            <div class="row mb-4">
+                                <div class="col">
+                                    <label class="d-block custom-label text-uppercase">Nombre</label>
+                                    <input type="text" name="nombre" class="form-control form-control-lg rounded-0 fs-6" required>
+                                </div>
+                                <div class="col">
+                                    <label class="d-block custom-label text-uppercase">Apellido</label>
+                                    <input type="text" name="apellido" class="form-control form-control-lg rounded-0 fs-6" required>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="d-block custom-label text-uppercase">Correo Electrónico</label>
+                                <input type="email" name="email" class="form-control form-control-lg rounded-0 fs-6" placeholder="hola@ejemplo.com" required>
+                            </div>
+                            <div class="mb-5">
+                                <label class="d-block custom-label text-uppercase">Contraseña</label>
+                                <input type="password" name="password" class="form-control form-control-lg rounded-0 fs-6" placeholder="••••••••" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-outline-dark w-100 rounded-0 py-3 text-uppercase" style="letter-spacing: 1px;">
+                                Registrarme
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{{end}}

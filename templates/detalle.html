@@ -1,0 +1,143 @@
+{{define "content"}}
+<div class="container py-5">
+    
+    <a href="/productos" class="text-decoration-none text-muted small text-uppercase d-inline-block mb-4" style="letter-spacing: 1px;">
+        &larr; Volver al catálogo
+    </a>
+
+    <div class="row gx-5">
+        
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="product-detail-img shadow-sm p-4">
+                <img src="{{.Producto.ImagenURL}}" alt="{{.Producto.Nombre}}" class="img-fluid">
+            </div>
+        </div>
+
+        <div class="col-md-6 d-flex flex-column justify-content-center pe-lg-5">
+            
+            <h1 class="mb-2 product-title">{{.Producto.Nombre}}</h1>
+            
+            <div class="mb-3 product-reviews">
+                ★ ★ ★ ★ ★ <span class="text-muted ms-2" style="font-size: 0.8rem;">(12 reseñas)</span>
+            </div>
+
+            <p class="mb-4 product-price">${{.Producto.Precio}}</p>
+
+            <p class="text-muted mb-3" style="font-size: 0.95rem;">Material: {{.Producto.Material}}</p>
+
+            <div class="d-flex align-items-center mb-4 stock-indicator">
+                <span class="dot">●</span>
+                <span class="ms-2 text-muted">En stock</span>
+            </div>
+
+            <form action="/carrito/agregar" method="POST" class="mb-4" id="formAgregarCarrito">
+                <input type="hidden" name="producto_id" value="{{.Producto.ID}}">
+                
+                {{if gt (len .Tallas) 1}}
+                    <div class="mb-4">
+                        <span class="d-block mb-3 talla-label">TALLA</span>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {{range .Tallas}}
+                                <input type="radio" class="btn-check product-size-option" name="producto_talla_id" id="talla_{{.ID}}" value="{{.ID}}" data-stock="{{.Stock}}" required {{if eq .Stock 0}}disabled{{end}}>
+                                <label class="btn btn-outline-dark rounded-0 d-flex align-items-center justify-content-center btn-talla {{if eq .Stock 0}}sold-out{{end}}" for="talla_{{.ID}}">
+                                    {{.Talla}}
+                                </label>
+                            {{end}}
+                        </div>
+                    </div>
+                    {{else}}
+                    {{range .Tallas}}
+                        <input type="hidden" name="producto_talla_id" value="{{.ID}}" data-stock="{{.Stock}}" id="tallaUnica">
+                    {{end}}
+                {{end}}
+
+                <div class="mb-4">
+                    <label for="cantidadProducto" class="d-block mb-2 talla-label">CANTIDAD</label>
+                    <select name="cantidad" id="cantidadProducto" class="form-select rounded-0 quantity-select" required>
+                        <option value="">Selecciona una talla disponible</option>
+                    </select>
+                    <small id="stockDisponibleTexto" class="text-muted d-block mt-2"></small>
+                </div>
+
+                <button type="submit" id="btnAgregarCarrito" class="btn btn-dark w-100 rounded-0 py-3 text-uppercase d-flex justify-content-center align-items-center gap-2 btn-add-cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z"/>
+                    </svg>
+                    Agregar al carrito
+                </button>
+            </form>
+
+            <div class="row text-center mb-5 border-bottom pb-4">
+                <div class="col-6 border-end">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456zM12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12v4zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>
+                    </div>
+                    <span class="text-muted feature-text">Envío a todo Ecuador</span>
+                </div>
+                <div class="col-6">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/></svg>
+                    </div>
+                    <span class="text-muted feature-text">Materiales certificados</span>
+                </div>
+            </div>
+
+            <div>
+                <h6 class="mb-3 desc-title">Descripción</h6>
+                <p class="text-muted desc-text">{{.Producto.Descripcion}}</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const cantidadSelect = document.getElementById("cantidadProducto");
+    const stockTexto = document.getElementById("stockDisponibleTexto");
+    const botonAgregar = document.getElementById("btnAgregarCarrito");
+    const tallaUnica = document.getElementById("tallaUnica");
+    const opcionesTalla = document.querySelectorAll(".product-size-option");
+
+    function actualizarCantidad(stock) {
+        stock = Number(stock || 0);
+        cantidadSelect.innerHTML = "";
+
+        if (stock <= 0) {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "Sin stock disponible";
+            cantidadSelect.appendChild(option);
+            cantidadSelect.disabled = true;
+            botonAgregar.disabled = true;
+            stockTexto.textContent = "Producto agotado";
+            return;
+        }
+
+        for (let i = 1; i <= stock; i++) {
+            const option = document.createElement("option");
+            option.value = String(i);
+            option.textContent = String(i);
+            cantidadSelect.appendChild(option);
+        }
+        cantidadSelect.disabled = false;
+        botonAgregar.disabled = false;
+        stockTexto.textContent = stock + " disponible(s)";
+    }
+
+    opcionesTalla.forEach(function (opcion) {
+        opcion.addEventListener("change", function () {
+            actualizarCantidad(opcion.dataset.stock);
+        });
+    });
+
+    const tallaInicial = document.querySelector(".product-size-option:checked");
+    if (tallaInicial) {
+        actualizarCantidad(tallaInicial.dataset.stock);
+    } else if (tallaUnica) {
+        actualizarCantidad(tallaUnica.dataset.stock);
+    } else {
+        actualizarCantidad(0);
+    }
+});
+</script>
+{{end}}

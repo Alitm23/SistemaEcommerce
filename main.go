@@ -7,7 +7,8 @@ import (
 
 	"github.com/Alitm23/SistemaEcommerce/db"
 	"github.com/Alitm23/SistemaEcommerce/handlers"
-	"github.com/Alitm23/SistemaEcommerce/services"
+	"github.com/Alitm23/SistemaEcommerce/models"
+	"github.com/Alitm23/SistemaEcommerce/utils"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -23,49 +24,76 @@ func main() {
 	// Conectar a PostgreSQL
 	_, errDB := db.Connect()
 	if errDB != nil {
-		log.Fatal("Error crítico al conectar a la BD: ", errDB)
+		log.Fatal("Error al conectar a la BD: ", errDB)
 	}
 	// Cierra la conexión cuando el servidor se detenga
 	defer db.DB.Close()
 
+	models.GestiondeStock()
+	models.GestorNotificaciones()
+	models.GestorAnalisis()
+
 	r := mux.NewRouter()
 
-	// Instanciar Servicios (Capa de Negocio)
-	usuarioService := services.NuevoUsuarioService()
-	productoService := services.NuevoProductoService()
-	// Instanciar Controladores (Capa HTTP)
-	productoHandler := handlers.NuevoProductoHandler(productoService)
-	homeHandler := handlers.NuevoHomeHandler()
-	authHandler := handlers.NuevoAuthHandler(usuarioService)
+	r.HandleFunc("/", handlers.MostrarInicioGetHandler).Methods("GET")
+	r.HandleFunc("/productos", handlers.ListarProductos).Methods("GET")
+	r.HandleFunc("/productos/{id:[0-9]+}", handlers.DetalleProducto).Methods("GET")
+	r.HandleFunc("/login", handlers.Login).Methods("GET", "POST")
+	r.HandleFunc("/registro", handlers.Registro).Methods("GET", "POST")
+	r.HandleFunc("/logout", handlers.Logout).Methods("GET")
+	r.HandleFunc("/carrito", handlers.VerCarrito).Methods("GET")
+	r.HandleFunc("/carrito/agregar", handlers.AgregarItems).Methods("POST")
+	r.HandleFunc("/carrito/quitar/{id:[0-9]+}", handlers.QuitarItem).Methods("POST")
+	r.HandleFunc("/checkout", handlers.MostrarCheckout).Methods("GET")
+	r.HandleFunc("/checkout/procesar", handlers.ProcesarCheckout).Methods("POST")
 
-	//RUTAS
-	// Rutas de Navegación Pública
-	r.HandleFunc("/productos", productoHandler.ListarProductos).Methods("GET")
-	r.HandleFunc("/", homeHandler.MostrarInicio).Methods("GET")
+	// --- 2. RUTAS PÚBLICAS (API JSON) ---
+	r.HandleFunc("/api/auth/login", handlers.ApiLogin).Methods("POST")
+	r.HandleFunc("/api/auth/registro", handlers.ApiRegistro).Methods("POST")
+	r.HandleFunc("/api/productos", handlers.ApiListarProductos).Methods("GET")
+	r.HandleFunc("/api/productos/buscar", handlers.ApiBuscarProductos).Methods("GET")
 
-	// Rutas de Autenticación (Login / Registro / Logout)
-	r.HandleFunc("/login", authHandler.MostrarLogin).Methods("GET")
-	r.HandleFunc("/login", authHandler.ProcesarLogin).Methods("POST")
-	r.HandleFunc("/registro", authHandler.ProcesarRegistro).Methods("POST")
-	r.HandleFunc("/logout", authHandler.CerrarSesion).Methods("GET")
+	// --- 3. RUTAS PRIVADAS (API PROTEGIDA CON JWT) ---
+	api := r.PathPrefix("/api").Subrouter()
+	api.Use(utils.MiddlewareJWT)
 
-	//Archivos estátivos y servidor
+	api.HandleFunc("/carrito", handlers.ApiVerCarrito).Methods("GET")
+	api.HandleFunc("/carrito/agregar", handlers.ApiAgregarItem).Methods("POST")
+	api.HandleFunc("/ordenes", handlers.ApiListarOrdenes).Methods("GET")
+	api.HandleFunc("/ordenes/pagar", handlers.ApiProcesarPago).Methods("POST")
 
-	// Servir la carpeta de archivos estáticos (CSS, JS, imágenes)
+	// --- 4. RUTAS ADMIN (PROTEGIDAS) ---
+	admin := api.PathPrefix("/admin").Subrouter()
+	admin.Use(utils.SoloAdminMiddleware)
+
+	admin.HandleFunc("/productos", handlers.ApiAdminCrearProducto).Methods("POST")
+	admin.HandleFunc("/productos/{id:[0-9]+}", handlers.ApiAdminActualizarProducto).Methods("PUT")
+	admin.HandleFunc("/productos/{id:[0-9]+}", handlers.ApiAdminEliminarProducto).Methods("DELETE")
+
+	// --- 5. PANEL ADMINISTRATIVO (VISTAS HTML) ---
+	adminWeb := r.PathPrefix("/admin").Subrouter()
+	adminWeb.HandleFunc("", handlers.RedireccionarDashboardAdmin).Methods("GET")
+	adminWeb.HandleFunc("/", handlers.RedireccionarDashboardAdmin).Methods("GET")
+	adminWeb.HandleFunc("/dashboard", handlers.DashboardAdmin).Methods("GET")
+	adminWeb.HandleFunc("/productos", handlers.GestionInventario).Methods("GET")
+	adminWeb.HandleFunc("/productos/nuevo", handlers.CrearProducto).Methods("POST")
+	adminWeb.HandleFunc("/categorias/nueva", handlers.CrearCategoriaAdmin).Methods("POST")
+	adminWeb.HandleFunc("/productos/editar", handlers.EditarProductoAdmin).Methods("POST")
+	adminWeb.HandleFunc("/productos/eliminar", handlers.EliminarProductoAdmin).Methods("GET", "POST")
+	adminWeb.HandleFunc("/ordenes", handlers.GestionOrdenes).Methods("GET")
+	adminWeb.HandleFunc("/ordenes/cancelar", handlers.CancelarOrdenAdmin).Methods("POST")
+	adminWeb.HandleFunc("/usuarios", handlers.GestionUsuarios).Methods("GET")
+	adminWeb.HandleFunc("/usuarios/rol", handlers.CambiarRolUsuarioAdmin).Methods("POST")
+
+	// Archivos estáticos
 	fs := http.FileServer(http.Dir("./static"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
-	// Leer el puerto desde el .env
 	puerto := os.Getenv("PORT")
 	if puerto == "" {
 		puerto = "8080"
 	}
 
 	log.Printf("Servidor corriendo en http://localhost:%s", puerto)
-
-	// Levantar el servidor HTTP
-	err = http.ListenAndServe(":"+puerto, r)
-	if err != nil {
-		log.Fatal("Error crítico al iniciar el servidor: ", err)
-	}
+	log.Fatal(http.ListenAndServe(":"+puerto, r))
 }

@@ -1,0 +1,56 @@
+{{define "content"}}
+<div class="container py-5">
+    <h1 class="mb-4 product-title text-center">Finalizar Compra</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="bg-white p-5 shadow-sm checkout-box">
+                <form action="/checkout/procesar" method="POST">
+                    <h5 class="mb-4 desc-title">Direccion de Envio</h5>
+                    <div class="row g-3 mb-5">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Provincia</label>
+                            <input type="text" class="form-control rounded-0" name="provincia" placeholder="Ej. Imbabura" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Ciudad</label>
+                            <input type="text" class="form-control rounded-0" name="ciudad" placeholder="Ej. Atuntaqui" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted small">Direccion exacta</label>
+                            <input type="text" class="form-control rounded-0" name="direccion" placeholder="Calle principal y secundaria" required>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-4 desc-title">Metodo de Pago</h5>
+                    <div class="p-4 mb-5 payment-simulator-box">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label text-muted small">Numero de Tarjeta</label>
+                                <input type="text" class="form-control rounded-0" name="numero_tarjeta" placeholder="0000 0000 0000 0000" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Fecha de Vencimiento</label>
+                                <input type="text" class="form-control rounded-0" name="fecha_vencimiento" placeholder="MM/YY" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small">Codigo CVC</label>
+                                <input type="text" class="form-control rounded-0" name="cvc" placeholder="123" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="metodo_pago" value="tarjeta">
+                    <div class="d-grid gap-3">
+                        <button type="submit" name="estado_pago" value="pagado" class="btn btn-dark w-100 rounded-0 py-3 text-uppercase btn-add-cart">
+                            Pagar orden
+                        </button>
+                        <button type="submit" name="estado_pago" value="cancelado" class="btn btn-outline-dark w-100 rounded-0 py-3 text-uppercase btn-checkout-action" formnovalidate>
+                            Cancelar orden
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

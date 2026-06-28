@@ -1,10 +1,88 @@
---archivo inicio.htm---
 {{define "content"}}
-    
-    <p>Este es el inicio del sistema.</p>
-    <p>
-        numero de <
-        
-    </p>
+<div class="top-bar">
+      ENVÍOS A TODO EL ECUADOR 
+</div>
+
+<div class="hero-banner">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">HECHO A MANO</h1>
+        <p class="hero-subtitle">    Joyas artesanales inspiradas para acompañar tus momentos más especiales</p>
+    </div>
+</div>
+
+<div class="container py-5 mt-4">
+
+    <div class="row justify-content-center mb-5 pb-4 border-bottom">
+        <div class="col-lg-8 text-center">
+            <h2 class="mb-4" style="font-family: 'Playfair Display', serif; font-size: 2rem;">Arte & Tradición</h2>
+            <p class="text-muted fs-5 mb-4" style="line-height: 1.8;">
+                Cada una de nuestras joyas nace del trabajo cuidadoso de artesanos, quienes transforman materiales seleccionados en piezas llenas de significado.
+            </p>
+            <p class="text-muted fs-5">
+                Elaboramos joyas en plata, baño en oro, piedras naturales y otros acabados seleccionados, creando piezas  modernas y de distintos estilos, combinando técnicas llenas de tradición.
+            </p>
+            <a href="/login" class="btn btn-dark rounded-0 px-5 py-3 mt-4 text-uppercase hero-auth-btn">
+                Ingresar / Registrarse
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <h3 class="text-center mb-5" style="font-family: 'Playfair Display', serif; font-size: 2rem;">Categorías</h3>
+            
+            <div id="categoriasCarousel" class="carousel slide shadow-sm" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#categoriasCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#categoriasCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#categoriasCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                </div>
+                
+                <div class="carousel-inner" style="border-radius: 12px;">
+                    <div class="carousel-item active">
+                        <div class="carousel-img-wrapper">
+                            <img src="https://i.pinimg.com/1200x/32/f3/da/32f3da15ceca1b2fd7fdf16155c06ba4.jpg" class="d-block w-100" alt="Anillos">
+                        </div>
+                        <div class="carousel-caption d-none d-md-block" style="background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px;">
+                            <h5 style="font-family: 'Playfair Display', serif; font-size: 1.5rem;">Anillos</h5>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-img-wrapper">
+                            <img src="https://i.pinimg.com/736x/8c/03/43/8c0343a9c6a33a6eca3a5576b6d02897.jpg" class="d-block w-100" alt="Collares">
+                        </div>
+                        <div class="carousel-caption d-none d-md-block" style="background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px;">
+                            <h5 style="font-family: 'Playfair Display', serif; font-size: 1.5rem;">Collares</h5>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-img-wrapper">
+                            <img src="https://i.pinimg.com/1200x/24/15/ae/2415ae37ec08bbe6b50707f6fe298f4e.jpg" class="d-block w-100" alt="Aretes">
+                        </div>
+                        <div class="carousel-caption d-none d-md-block" style="background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px;">
+                            <h5 style="font-family: 'Playfair Display', serif; font-size: 1.5rem;">Aretes</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="carousel-control-prev" type="button" data-bs-target="#categoriasCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#categoriasCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Siguiente</span>
+                </button>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="/productos" class="btn btn-outline-dark rounded-0 px-5 py-3 text-uppercase" style="letter-spacing: 2px;">
+                    Ver Catálogo Completo
+                </a>
+            </div>
+
+        </div>
+    </div>
 
 {{end}}

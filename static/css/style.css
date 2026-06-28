@@ -1,0 +1,444 @@
+body {
+    background-color: #f8f6f0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #333333;
+}
+
+/* Encabezado principal (Header) */
+header h1 {
+    font-family: 'Playfair Display', serif; /* Tipografía serif de alta gama */
+    font-weight: normal;
+    color: #111111;
+    text-transform: uppercase;
+}
+
+header .border-bottom {
+    border-bottom: 1px solid #eaeaea !important;
+}
+
+/* Contenedor de contenido dinámico */
+main {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Footer */
+footer {
+    background-color: #000000 !important;
+    border-top: 1px solid #ffffff !important;
+    letter-spacing: 1px;
+}
+.footer-custom {
+    background-color: #050505;
+    color: #ffffff;
+    padding: 4rem 0 2rem;
+}
+.footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    letter-spacing: 4px;
+    margin-bottom: 1.5rem;
+}
+.footer-text {
+    font-size: 1rem;
+    color: #ffffff;
+    max-width: 650px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+}
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-bottom: 3rem;
+}
+.social-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+.social-icon:hover {
+    background-color: #b8975a; /* Tu color dorado */
+    color: #fff;
+}
+.footer-copy {
+    font-size: 0.85rem;
+    color: #666666;
+}
+
+/*ESTILOS DE LA PÁGINA DE INICIO*/
+.top-bar {
+    background-color: #0a192f; 
+    color: white;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    padding: 10px 0;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.hero-banner {
+    position: relative;
+    background-image: url('https://images.unsplash.com/photo-1573227890085-12ab5d68a170?q=80&w=911&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); 
+    background-size: cover;
+    background-position: center;
+    height: 65vh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end; 
+    padding: 5% 10%;
+}
+.hero-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+}
+.hero-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+    text-align: right;
+}
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.5rem;
+    line-height: 1;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+.hero-subtitle {
+    font-size: 1.3rem;
+    font-weight: 300;
+    letter-spacing: 1px;
+}
+.hero-auth-btn {
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.hero-auth-btn:hover {
+    background-color: #b8975a;
+    border-color: #b8975a;
+    color: #ffffff;
+}
+.carousel-img-wrapper {
+    height: 450px;
+    overflow: hidden;
+    background-color: #f8f6f0;
+}
+.carousel-img-wrapper img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+/* Filtros superiores */
+.filter-btn {
+    border: 1px solid #e0e0e0;
+    background-color: transparent;
+    color: #999;
+    transition: all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active {
+    background-color: #111;
+    color: #fff;
+    border-color: #111;
+}
+
+.product-img-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    width: 100%; 
+}
+
+.overlay-btn-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 0;
+    transform: translateY(100%); 
+    transition: transform 0.3s ease-in-out; 
+}
+
+.product-img-container:hover .overlay-btn-container {
+    transform: translateY(0); 
+}
+.navbar-brand-custom {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+/* logo */
+.navbar-brand-dot {
+    color: #b8975a;
+}
+
+/* Enlaces del menú central */
+.navbar-nav-custom {
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+}
+/* Estilo del recuadro carrito */
+.overlay-btn {
+    background-color: rgba(162, 145, 120, 0.9); 
+    color: white;
+    border: none;
+    padding: 12px 0;
+    font-size: 0.85em;
+    letter-spacing: 1px;
+}
+.overlay-btn:hover {
+    background-color: rgba(142, 125, 100, 1); 
+    color: white;
+}
+.catalog-search {
+    background-color: #ffffff;
+    border: 1px solid #eaeaea;
+    padding: 1.25rem;
+}
+.catalog-search-btn {
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+}
+.catalog-clear-btn {
+    width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+.catalog-material {
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Login */
+/* Estilos sutiles para las pestañas de navegación */
+.auth-tab {
+    color: #999;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 15px;
+    transition: all 0.3s;
+}
+.auth-tab:hover {
+    color: #555;
+    border-color: #eaeaea;
+}
+/* Estilo para la pestaña activa (línea negra inferior) */
+.auth-tab.active {
+    color: #111 !important;
+    font-weight: 600;
+    border-bottom: 2px solid #111 !important;
+}
+            
+/* Etiquetas encima de los inputs */
+.custom-label {
+    font-size: 0.75em;
+    letter-spacing: 1.5px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+/* Vista de detalle de Producto*/
+.product-detail-img {
+    background-color: #fff;
+    border-radius: 12px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 450px;
+    padding: 15px; 
+}
+.product-detail-img img {
+    width: 100%;        
+    max-width: 450px;   
+    height: auto;       
+    object-fit: contain;
+}
+
+/* Tipografía de la información de la joya */
+.product-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    color: #111;
+}
+.product-reviews {
+    color: #d4af37; /* Color dorado */
+    font-size: 0.9rem;
+}
+.product-price {
+    font-size: 1.5rem;
+    color: #b8975a; /* Color mostaza/dorado oscuro */
+}
+
+/* Indicador de Stock */
+.stock-indicator {
+    font-size: 0.9rem;
+}
+.stock-indicator .dot {
+    color: #28a745; /* Verde */
+    font-size: 0.7rem;
+}
+
+/* Formulario de Tallas */
+.talla-label {
+    font-size: 0.85em;
+    letter-spacing: 3px;
+    color: #333;
+}
+.btn-talla {
+    width: 45px;
+    height: 45px;
+    border-color: #eaeaea;
+}
+/* Clase especial para cuando no hay stock */
+.btn-talla.sold-out {
+    text-decoration: line-through;
+    color: #ccc;
+}
+
+/* Botón de agregar al carrito */
+.btn-add-cart {
+    letter-spacing: 1px;
+    font-size: 0.9em;
+}
+.quantity-select {
+    max-width: 180px;
+    border-color: #d8d8d8;
+}
+
+/* Sección de Iconos */
+.feature-icon {
+    color: #d4af37;
+    margin-bottom: 8px;
+}
+.feature-text {
+    font-size: 0.75rem;
+}
+
+/* Descripción inferior */
+.desc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: #111;
+}
+.desc-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+/* Tarjeta principal del formulario de checkout */
+.checkout-box {
+    border-radius: 12px;
+    border: 1px solid #eaeaea;
+}
+
+/* Recuadro informativo del método de pago simulado */
+.payment-simulator-box {
+    background-color: #f8f6f0;
+    border-left: 4px solid #b8975a;
+}
+
+/* Ícono de confirmación en la pantalla de éxito */
+.success-icon {
+    color: #28a745;
+}
+/* Espaciado de letras para los botones de acción del checkout */
+.btn-checkout-action {
+    letter-spacing: 1px;
+}
+
+/* Panel administrativo */
+.admin-shell {
+    min-height: 100vh;
+    background-color: #f8f6f0;
+}
+.sidebar {
+    min-height: 100vh;
+    background: #050505;
+    color: #ffffff;
+    width: 250px;
+    flex: 0 0 250px;
+}
+.sidebar a {
+    color: #cccccc;
+    text-decoration: none;
+    padding: 15px;
+    display: block;
+}
+.sidebar a:hover {
+    background: #1a1a1a;
+    color: #b8975a;
+}
+.active-link {
+    background: #1a1a1a;
+    color: #b8975a !important;
+    border-left: 4px solid #b8975a;
+}
+.admin-brand {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 2px;
+}
+.admin-main h1 {
+    font-family: 'Playfair Display', serif;
+    color: #111111;
+}
+.admin-card {
+    border: 0;
+    border-radius: 0;
+}
+.admin-card h5 {
+    color: #666666;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.admin-card h2 {
+    color: #111111;
+    margin-bottom: 0;
+}
+.admin-role-select {
+    width: 120px;
+}
+.cart-back-link {
+    color: #222222;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+.cart-back-link:hover {
+    color: #b8975a;
+}
+.admin-order-img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border: 1px solid #eaeaea;
+}
+.stock-container {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 4px;        
+    max-width: 200px; 
+}
+
+.badge-compact {
+    font-size: 0.75rem; 
+    padding: 2px 6px;
+    border-radius: 4px;
+}

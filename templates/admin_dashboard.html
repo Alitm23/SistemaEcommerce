@@ -1,0 +1,69 @@
+{{define "admin_content"}}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Panel Administrativo</h1>
+        <p class="text-muted mb-0">Resumen general de la tienda.</p>
+    </div>
+    <a href="/admin/productos" class="btn btn-dark rounded-0">Gestionar inventario</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card admin-card p-4 shadow-sm">
+            <h5>Total de Ventas</h5>
+            <h2>${{printf "%.2f" .TotalVentas}}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card admin-card p-4 shadow-sm">
+            <h5>Productos</h5>
+            <h2>{{.TotalProductos}}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card admin-card p-4 shadow-sm">
+            <h5>Ordenes</h5>
+            <h2>{{.TotalOrdenes}}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card admin-card p-4 shadow-sm">
+            <h5>Clientes</h5>
+            <h2>{{.TotalUsuarios}}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-lg-6">
+        <div class="card admin-card p-4 shadow-sm">
+            <h5>Productos mas vendidos</h5>
+            <div class="list-group list-group-flush">
+                {{range .MasVendidos}}
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <span>{{.Nombre}}</span>
+                        <span class="badge text-bg-dark rounded-0">{{.Cantidad}}</span>
+                    </div>
+                {{else}}
+                    <p class="text-muted mb-0">Aun no hay ventas registradas.</p>
+                {{end}}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card admin-card p-4 shadow-sm">
+            <h5>Productos menos vendidos</h5>
+            <div class="list-group list-group-flush">
+                {{range .MenosVendidos}}
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <span>{{.Nombre}}</span>
+                        <span class="badge text-bg-light border rounded-0">{{.Cantidad}}</span>
+                    </div>
+                {{else}}
+                    <p class="text-muted mb-0">Aun no hay ventas registradas.</p>
+                {{end}}
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
